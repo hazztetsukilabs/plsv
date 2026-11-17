@@ -3,8 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Template Slide Interaktif</title>
-
+<title>Persamaan Linear Satu Variabel (PLSV) — MTs An-Nawawi 01 Berjan</title>
+<meta name="description" content="Media belajar interaktif Matematika kelas VIII: Persamaan Linear Satu Variabel (PLSV). MTs An-Nawawi 01 Berjan, Pak Hazz.">
+<meta name="theme-color" content="#0e6e6e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%90%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Lexend:wght@400;600;700&display=swap">
+<!--
+  TEMPLATE SLIDE INTERAKTIF GABUNGAN (satu file, tanpa server, bisa offline)
+  Cara pakai : klik ganda file ini di Chrome/Edge.
+  Cara edit  : buka dengan Notepad/VS Code, ubah bagian "EDIT KONTEN" (CONFIG, SLIDES, BANK). Mesin di bawahnya tidak perlu diubah.
+  Tipe slide : judul, materi, pemantik, simulasi, flipcard, konsep, langkah, urutkan, benar-salah,
+               pasangkan, kuis, latihan, tinjau, diskusi, refleksi, rekap
+  Pintasan   : → Spasi PgDn = lanjut | ← PgUp = kembali | M daftar slide | G panel guru | R pilih siswa acak | J mulai/jeda jam pelajaran | T tema | F layar penuh
+  Font: memakai font sistem (tanpa unduhan), jadi 100% offline.
+  Waktu      : atur CONFIG.jp dan CONFIG.menitJP; jumlah "waktu" semua slide harus sama dengan totalnya (dicek di Panel guru > Rencana waktu).
+-->
 <style>
 :root{--hue:176;--r:14px;--paper:#faf6ec;--grid:rgba(14,110,110,.07);--ink:#1b2430;--soft:#4d5868;--line:#d6cfbb;--card:#fff;
   --acc:hsl(var(--hue) 75% 24%);--accw:hsl(var(--hue) 50% 91%);--on:#fff;--gold:#e8a317;--ok:#15803d;--okw:#dcf3e4;--bad:#b4400c;--badw:#fde8dc;
@@ -85,6 +100,7 @@ dialog table [aria-current=true]{background:var(--accw)}
 </style>
 </head>
 <body>
+<noscript><p style="padding:1em">Halaman ini membutuhkan JavaScript agar slide dan latihan dapat berjalan.</p></noscript>
 <div id="app">
   <header class="top">
     <span class="brand" id="brand"></span>
@@ -156,7 +172,7 @@ dialog table [aria-current=true]{background:var(--accw)}
    ===================================================================== */
 const CONFIG = {
   judul: 'Persamaan Linear Satu Variabel (PLSV)', mapel: 'Matematika', kelas: 'VIII', fase: 'D',
-  guru: 'Pak Hazz', sekolah: 'SMP/MTs', jenjang: 'smp',          // 'sd' | 'smp' | 'sma' mengubah warna dan sudut
+  guru: 'Pak Hazz', sekolah: 'MTs An-Nawawi 01 Berjan', jenjang: 'smp',          // 'sd' | 'smp' | 'sma' mengubah warna dan sudut
   jp: 2, menitJP: 40,                                            // alokasi waktu: 2 JP x 40 menit = 80 menit (umumnya SD 35, SMP 40, SMA/SMK 45; sesuaikan kebijakan sekolah)
   tp: { TP1: 'Memaknai variabel dan penyelesaian persamaan memakai model neraca.', TP2: 'Menyelesaikan PLSV dengan prinsip kesetaraan, lengkap dengan alasan tiap langkah.', TP3: 'Menyusun dan menyelesaikan model PLSV dari masalah sehari-hari, lalu memeriksa jawaban.' }
 };
@@ -239,7 +255,7 @@ const SLIDES = [
     baris: v => [v.p, v.q, v.r, `${suku(3 - v.p, 5 - v.q + v.r)} = ${suku(1 - v.p, 15 - v.q)}`, v.r === 0 ? 'Seimbang' : 'Miring'],
     gambar: v => neraca({ x: 3 - v.p, c: 5 - v.q + v.r }, { x: 1 - v.p, c: 15 - v.q }, 5, {}),
     temuan: 'Selama jumlah yang diambil sama di kedua piringan, neraca tetap seimbang dan nilai x tidak berubah (akhirnya 2 kardus = 10 jeruk, jadi x = 5). Begitu satu piringan saja yang diubah, neraca miring dan persamaannya tidak lagi setara.',
-    catatan: 'Prinsip kesetaraan ditemukan lewat manipulasi. Variasi (变式): bentuk berbeda dari Eksplorasi 1, tetapi aturan neracanya sama. Pastikan ada siswa yang mencatat kasus "tambah kiri saja" dan menjelaskan mengapa neraca miring. Tanyakan: apa yang akan terjadi pada x yang kita cari jika kita curang?' },
+    catatan: 'Prinsip kesetaraan ditemukan lewat manipulasi. Variasi: bentuk berbeda dari Eksplorasi 1, tetapi aturan neracanya sama. Pastikan ada siswa yang mencatat kasus "tambah kiri saja" dan menjelaskan mengapa neraca miring. Tanyakan: apa yang akan terjadi pada x yang kita cari jika kita curang?' },
 
   { tipe: 'konsep', id: 'konsep', waktu: 5, label: 'Konsep', judul: 'Bagaimana aturan menyelesaikan PLSV?',
     tab: [{ n: 'Definisi', h: '<p class="lead">Persamaan linear satu variabel (PLSV) adalah kalimat dengan tanda <b>=</b> yang memuat <b>satu variabel</b> berpangkat satu.</p><p class="formula">ax + b = c</p><p>dengan <b>a ≠ 0</b>. Variabel boleh ada di kedua ruas, yaitu <b>ax + b = cx + d</b> (asal a ≠ c). <b>Penyelesaian</b> adalah nilai x yang membuat kedua ruas sama.</p><p class="soft">Di neraca: a = banyak kardus, b = jeruk lepas, tanda = berarti seimbang.</p>' },
@@ -278,22 +294,22 @@ const SLIDES = [
 
   { tipe: 'latihan', id: 'latihan', waktu: 10, label: 'Latihan mandiri', judul: 'Soal selalu baru',
     levelNama: ['Satu dan dua langkah', 'Dua ruas, tanda negatif, kurung', 'Cerita dan bentuk c − ax'],
-    catatan: 'Soal dibangkitkan acak dengan angka berbeda (bukan sekadar urutan). Ini rangkaian variasi (变式): inti konsep tetap, bentuk dan konteks berubah. Umpan balik diagnostik menunjuk kesalahan seperti lupa membagi, salah tanda, atau kurung tidak dibuka penuh. Anjurkan siswa naik level setelah 2 jawaban benar tanpa petunjuk.' },
+    catatan: 'Soal dibangkitkan acak dengan angka berbeda (bukan sekadar urutan). Ini rangkaian variasi: inti konsep tetap, bentuk dan konteks berubah. Umpan balik diagnostik menunjuk kesalahan seperti lupa membagi, salah tanda, atau kurung tidak dibuka penuh. Anjurkan siswa naik level setelah 2 jawaban benar tanpa petunjuk.' },
 
   { tipe: 'tinjau', id: 'tinjau', waktu: 4, label: 'Tinjau kesalahan', judul: 'Belajar dari jawaban yang belum tepat',
-    catatan: 'Slide ini otomatis menampilkan soal yang salah dari kuis, benar-salah, dan latihan, lengkap dengan penyebab dan perbaikannya (错题回顾). Minta siswa memilih satu kesalahan, menjelaskan penyebabnya kepada teman, lalu mengerjakan ulang soal serupa di slide Latihan.' },
+    catatan: 'Slide ini otomatis menampilkan soal yang salah dari kuis, benar-salah, dan latihan, lengkap dengan penyebab dan perbaikannya. Minta siswa memilih satu kesalahan, menjelaskan penyebabnya kepada teman, lalu mengerjakan ulang soal serupa di slide Latihan.' },
 
   { tipe: 'langkah', id: 'papan', waktu: 3, label: 'Ringkasan', judul: 'Papan tulis: langkah baku menyelesaikan PLSV',
     soal: 'Tulis papan tulis bersama. Bentuk umum: <span class="formula">ax + b = cx + d</span>',
     langkah: [['1. Buka kurung', 'Jabarkan semua suku: 2(x + 3) = 2x + 6.'], ['2. Kumpulkan suku x', 'Ambil kardus yang sama dari kedua ruas sampai x tinggal di satu ruas.'], ['3. Kumpulkan angka', 'Ambil jeruk lepas yang sama dari kedua ruas.'],
               ['4. Bagi dengan koefisien x', 'Bagi kedua ruas dengan bilangan yang sama, bukan nol.'], ['5. Periksa', 'Masukkan hasil ke persamaan awal. Kedua ruas harus sama.']],
-    catatan: 'Bangun ringkasan bertahap sambil bertanya: apa langkah berikutnya dan mengapa? Siswa menyalin ke buku (板书式总结).' },
+    catatan: 'Bangun ringkasan bertahap sambil bertanya: apa langkah berikutnya dan mengapa? Siswa menyalin ke buku.' },
 
   { tipe: 'diskusi', id: 'tantangan', waktu: 4, label: 'Tantangan', judul: 'Dari cerita ke persamaan, lalu rancang soalmu', durasi: 150,
     soal: 'Pak Hazz membeli <b>4 kardus spidol</b> yang isinya sama dan <b>3 spidol lepas</b>. Seluruhnya ada <b>35 spidol</b>. Berapa isi satu kardus? <b>Lalu rancang soalmu sendiri</b>: buat persamaan ax + b = cx + d yang penyelesaiannya x = 6.',
     langkah: ['Tulis modelnya: 4x + 3 = 35.', 'Kurangi 3 di kedua ruas, lalu bagi 4. Periksa dengan memasukkan hasil ke cerita.', 'Rancang soal: pilih a = 5 dan c = 2, lalu hitung b dan d supaya kedua ruas sama saat x = 6.'],
     jawab: 'x = 8 spidol per kardus (4(8) + 3 = 35). Contoh rancangan: 5x + 2 = 2x + 20. Saat x = 6, kiri 5(6) + 2 = 32 dan kanan 2(6) + 20 = 32. Tukarkan soalmu dengan teman dan selesaikan.',
-    catatan: 'Perluasan (拓展): siswa mengubah cerita menjadi model, lalu menjadi pembuat soal. Berikan 2,5 menit diskusi, 1,5 menit pembahasan. Siswa yang cepat boleh merancang soal dengan kurung.' },
+    catatan: 'Perluasan: siswa mengubah cerita menjadi model, lalu menjadi pembuat soal. Berikan 2,5 menit diskusi, 1,5 menit pembahasan. Siswa yang cepat boleh merancang soal dengan kurung.' },
 
   { tipe: 'refleksi', id: 'refleksi', waktu: 3, label: 'Refleksi', judul: 'Seberapa jauh kamu sudah sampai?',
     tujuan: [{ t: 'Aku bisa menjelaskan arti variabel dan penyelesaian persamaan memakai neraca.', ulang: 'eks1' }, { t: 'Aku bisa menyelesaikan PLSV dan menjelaskan alasan tiap langkah.', ulang: 'contoh' }, { t: 'Aku bisa mengubah cerita menjadi persamaan dan menyelesaikannya.', ulang: 'tantangan' }],
@@ -470,7 +486,7 @@ const RENDER = {
     timer(el, s.detik || 30); bukaBertahap(el, '.pt', $('[data-m]', el), $('[data-u]', el), 'Tampilkan petunjuk');
   },
   simulasi(s, el) {
-    const v = {}, rows = [], MAXB = 8;
+    const v = {}, rows = [], MAXB = 8; let sudah = false;
     el.innerHTML = kpl(s) + `<p class="lead">${s.soal}</p><div class="grid2"><div class="kartu" style="text-align:center"><div class="svg"></div></div><div style="display:grid;gap:.7em">
       <div class="kartu" style="display:grid;gap:.4em">${s.slider.map(x => `<label for="sl-${x.k}"><b>${x.label}:</b> <output id="o-${x.k}">${x.val}</output></label><input type="range" id="sl-${x.k}" min="${x.min}" max="${x.max}" step="1" value="${x.val}">`).join('')}<dl class="hasil" style="display:grid;grid-template-columns:1fr auto;gap:.2em 1em;margin:.4em 0 0"></dl></div>
       <div class="aksi"><button class="btn" data-c>Catat ke tabel</button><button class="btn o" data-h>↺ Hapus tabel</button><button class="btn o" data-t disabled>Rumuskan temuan</button></div><p class="soft st" aria-live="polite"></p>
@@ -484,7 +500,7 @@ const RENDER = {
       if (rows.some(x => x.join('|') === key)) { $('.st', el).textContent = 'Data itu sudah tercatat. Geser ke ukuran lain.'; return; }
       if (rows.length >= MAXB) { $('.st', el).textContent = `Tabel penuh (${MAXB} data). Tekan Hapus tabel untuk mulai lagi.`; return; } rows.push(r); log(); };
     $('[data-h]', el).onclick = () => { rows.length = 0; $('.tm', el).hidden = true; log(); };
-    $('[data-t]', el).onclick = () => { $('.tm', el).hidden = false; poin(s.id, s.judul, true); };
+    $('[data-t]', el).onclick = () => { $('.tm', el).hidden = false; if (!sudah) { sudah = true; poin(s.id, s.judul, true); } };
     draw(); log();
   },
   flipcard(s, el) {
@@ -688,7 +704,7 @@ let PAKET = [];
 $('#b-paket').onclick = () => { const jml = { 1: +$('#j1').value || 0, 2: +$('#j2').value || 0, 3: +$('#j3').value || 0 }; PAKET = paket(jml); const bahas = $('#o-bahas').checked;
   $('#paket-out').innerHTML = PAKET.map(q => `<li><small class="soft">Level ${q.level} · ${q.kognitif} · ${q.tp} · ${q.id}</small><div>${q.soal}</div><ol style="list-style:upper-alpha">${q.opsi.map((o, i) => `<li class="${i === q.kunci ? 'k' : ''}">${o}${i === q.kunci ? ' ✓' : ''}</li>`).join('')}</ol>${bahas && q.pembahasan ? `<div class="soft">Pembahasan: ${q.pembahasan}</div>` : ''}</li>`).join('');
   $('#st-paket').textContent = PAKET.length ? `${PAKET.length} soal dibuat.` : 'Isi jumlah soal minimal 1.'; $('#b-salin').disabled = !PAKET.length; $('#paket-teks').hidden = true; };
-$('#b-salin').onclick = () => { const bahas = $('#o-bahas').checked, L = [`PAKET SOAL: ${polos(CONFIG.judul)}`, `${CONFIG.mapel} · Kelas ${CONFIG.kelas} · Fase ${CONFIG.fase}`, ''];
+$('#b-salin').onclick = () => { const bahas = $('#o-bahas').checked, L = [`PAKET SOAL: ${polos(CONFIG.judul)}`, `${CONFIG.sekolah} · ${CONFIG.mapel} · Kelas ${CONFIG.kelas} · Fase ${CONFIG.fase}`, `Guru: ${CONFIG.guru}`, 'Nama: ....................   Kelas: ......   Tanggal: ..........', ''];
   PAKET.forEach((q, n) => { L.push(`${n + 1}. [Level ${q.level} · ${q.kognitif}] ${polos(q.soal)}`); q.opsi.forEach((o, i) => L.push(`   ${HURUF[i]}. ${polos(o)}`)); L.push(''); });
   L.push('KUNCI JAWABAN'); PAKET.forEach((q, n) => L.push(`${n + 1}. ${HURUF[q.kunci]}${bahas && q.pembahasan ? ' | ' + polos(q.pembahasan) : ''}`));
   const t = L.join('\n'), ta = $('#paket-teks'), st = $('#st-paket'), cad = () => { ta.value = t; ta.hidden = false; ta.focus(); ta.select(); st.textContent = 'Teks sudah dipilih. Tekan Ctrl+C untuk menyalin.'; };
@@ -717,7 +733,7 @@ stage.addEventListener('touchend', e => { if (!tx) return; const dx = e.changedT
 /* ---------- Mulai ---------- */
 document.documentElement.dataset.jenjang = CONFIG.jenjang; $('#o-jenjang').value = CONFIG.jenjang;
 document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-$('#brand').textContent = `${CONFIG.judul} · ${CONFIG.mapel} ${CONFIG.kelas}`; document.title = `${polos(CONFIG.judul)} — ${CONFIG.mapel}`;
+$('#brand').textContent = `${CONFIG.judul} · ${CONFIG.mapel} ${CONFIG.kelas}`; document.title = `${polos(CONFIG.judul)} — ${CONFIG.mapel} · ${CONFIG.sekolah}`;
 $('#pb').setAttribute('aria-valuemin', 1); $('#pb').setAttribute('aria-valuemax', SLIDES.length);
 renderSemua(); hud(); labelJam(); infoKet();
 const awal = parseInt(location.hash.slice(1), 10); go(Number.isNaN(awal) ? 0 : awal - 1);
