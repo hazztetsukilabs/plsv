@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Template Slide Interaktif</title>
+<!--
+  TEMPLATE SLIDE INTERAKTIF GABUNGAN (satu file, tanpa server, bisa offline)
+  Cara pakai : klik ganda file ini di Chrome/Edge.
+  Cara edit  : buka dengan Notepad/VS Code, ubah bagian "EDIT KONTEN" (CONFIG, SLIDES, BANK). Mesin di bawahnya tidak perlu diubah.
+  Tipe slide : judul, materi, pemantik, simulasi, flipcard, konsep, langkah, urutkan, benar-salah,
+               pasangkan, kuis, latihan, tinjau, diskusi, refleksi, rekap
+  Pintasan   : → Spasi PgDn = lanjut | ← PgUp = kembali | M daftar slide | G panel guru | R pilih siswa acak | J mulai/jeda jam pelajaran | T tema | F layar penuh
+  Font: memakai font sistem (tanpa unduhan), jadi 100% offline.
+  Waktu      : atur CONFIG.jp dan CONFIG.menitJP; jumlah "waktu" semua slide harus sama dengan totalnya (dicek di Panel guru > Rencana waktu).
+-->
+<style>
+:root{--hue:176;--r:14px;--paper:#faf6ec;--grid:rgba(14,110,110,.07);--ink:#1b2430;--soft:#4d5868;--line:#d6cfbb;--card:#fff;
+  --acc:hsl(var(--hue) 75% 24%);--accw:hsl(var(--hue) 50% 91%);--on:#fff;--gold:#e8a317;--ok:#15803d;--okw:#dcf3e4;--bad:#b4400c;--badw:#fde8dc;
+  --f:"Lexend","Segoe UI",system-ui,sans-serif;--fd:"Bricolage Grotesque","Trebuchet MS",var(--f)}
+:root[data-jenjang=sd]{--hue:24;--r:22px}
+:root[data-jenjang=sma]{--hue:226;--r:8px}
+:root[data-theme=dark]{--paper:#17221f;--grid:rgba(255,255,255,.04);--ink:#edf1e9;--soft:#b6c1ba;--line:#3a4a43;--card:#22302b;
+  --acc:hsl(var(--hue) 70% 72%);--accw:hsl(var(--hue) 25% 22%);--on:#0f1d17;--ok:#6fd9a5;--okw:#1b3a2c;--bad:#ffa57d;--badw:#45291d;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;
+  color:var(--ink);font:clamp(16px,.8vw + 11px,23px)/1.5 var(--f);-webkit-font-smoothing:antialiased}
+#app{height:100dvh;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto;padding:0 max(12px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px,env(safe-area-inset-left))}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+h1,h2,h3,p{margin:0}h1,h2,h3{font-family:var(--fd);text-wrap:balance}
+h1{font-size:clamp(2.2em,5vw,3.6em);line-height:1;font-weight:800}h2{font-size:clamp(1.5em,2.6vw,2.2em);line-height:1.1;font-weight:800}h3{font-size:1.15em}
+.soft{color:var(--soft)}.lead{font-size:1.15em;max-width:62ch}
+header.top,footer.nav{display:flex;align-items:center;gap:8px;padding:8px 0;padding-top:max(8px,env(safe-area-inset-top))}
+header.top{flex-wrap:wrap}
+.brand{font:800 1em var(--fd);flex:1 1 9em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.hud{display:flex;gap:6px;font-size:.8em;font-weight:600}.hud span{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:.2em .7em;white-space:nowrap}
+.btn{border:2px solid var(--acc);background:var(--acc);color:var(--on);border-radius:var(--r);padding:.55em 1.1em;font-weight:600;cursor:pointer;min-height:44px}
+.btn.o{background:transparent;color:var(--acc)}.btn.s{min-height:36px;padding:.3em .8em;font-size:.85em;border-radius:99px;background:var(--card);color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:default}.btn:hover:not(:disabled){filter:brightness(1.08)}
+.bar{position:relative;height:8px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+main{position:relative;min-height:0;overflow-y:auto}
+.slide{max-width:1100px;margin:0 auto;padding:clamp(12px,2.5vh,32px) 6px 28px;display:flex;flex-direction:column;gap:.9em;min-height:100%;justify-content:center}
+.slide.in{animation:in .35s ease both}@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.eb{font:600 .78em var(--f);letter-spacing:.1em;text-transform:uppercase;color:var(--acc)}
+.kartu{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:.9em 1.1em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1em;align-items:start}
+.aksi{display:flex;flex-wrap:wrap;gap:.6em;align-items:center}
+.umpan{border-left:5px solid var(--acc);background:var(--accw);border-radius:8px;padding:.6em .9em}
+.umpan.ok{border-color:var(--ok);background:var(--okw)}.umpan.no{border-color:var(--bad);background:var(--badw)}
+.umpan.ok b::before{content:"✓ "}.umpan.no b::before{content:"✗ "}
+.opsis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:.6em}
+.opsi{display:flex;align-items:center;gap:.7em;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:.6em .9em;cursor:pointer;min-height:48px}
+.opsi:hover:not(:disabled){border-color:var(--acc)}.opsi:disabled{cursor:default}.opsi:disabled:not(.benar):not(.salah){opacity:.55}
+.hrf{flex:none;width:1.9em;height:1.9em;border-radius:50%;border:2px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-size:.8em}
+.opsi.benar{border-color:var(--ok);background:var(--okw)}.opsi.salah{border-color:var(--bad);background:var(--badw)}
+.opsi.benar::after{content:"✓";margin-left:auto;font-weight:700;color:var(--ok)}.opsi.salah::after{content:"✗";margin-left:auto;font-weight:700;color:var(--bad)}
+.opsi.pilih{border-color:var(--acc);background:var(--accw)}
+.kunci .opsi[data-benar],.kunci [data-benar]{outline:2px dashed var(--ok);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:.5em}.chip{border:2px solid var(--line);background:var(--card);border-radius:99px;padding:.35em 1em;cursor:pointer;font-weight:600;min-height:40px}
+.chip[aria-pressed=true],.chip[aria-selected=true],.chip[aria-checked=true]{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.formula{display:inline-block;font:700 1.5em var(--fd);background:var(--accw);border:2px solid var(--acc);border-radius:var(--r);padding:.2em .8em}
+input[type=text],input[type=number],select,textarea{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:.45em .7em;min-height:44px}
+input[type=range]{width:100%;accent-color:var(--acc)}
+table{border-collapse:collapse;width:100%;font-size:.85em}th,td{border-bottom:1px solid var(--line);padding:.3em .5em;text-align:left;font-variant-numeric:tabular-nums}
+.kol{display:grid;gap:.5em;margin:0;padding:0;list-style:none}.kol:empty{min-height:3em}
+.flip{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:1em;min-height:7em;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:.3em}
+.flip[aria-pressed=true]{background:var(--accw);border-color:var(--acc)}.flip b{font:800 1.3em var(--fd)}
+.ring{font:800 2.4em var(--fd);font-variant-numeric:tabular-nums}.ring.habis{color:var(--bad)}
+.pasang{display:grid;grid-template-columns:1fr 1.4fr;gap:1em}@media(max-width:640px){.pasang{grid-template-columns:1fr}}
+.rb{display:flex;flex-wrap:wrap;gap:.4em}.rb button{flex:1;min-width:7em}
+.big{font:800 3.5em var(--fd);color:var(--acc);line-height:1}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:.6em 1.2em;border-radius:99px;font-weight:600;z-index:60}
+dialog{width:min(960px,96vw);max-height:92vh;border:2px solid var(--ink);border-radius:16px;background:var(--paper);color:var(--ink);padding:18px 20px}
+dialog::backdrop{background:rgba(20,28,38,.6)}.dh{display:flex;align-items:center;gap:10px;margin-bottom:12px}.dh .btn{margin-left:auto}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.menu button{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:.5em .7em;cursor:pointer}.menu button[aria-current=true]{border-color:var(--acc);background:var(--accw)}
+.menu small{display:block;color:var(--acc);font-weight:600}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.pkt li{margin-bottom:.8em}.pkt .k{color:var(--ok);font-weight:600}
+.jam{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:6px 12px;margin-bottom:6px;background:var(--card);border:2px solid var(--line);border-radius:var(--r)}
+.jam-sisa{font:800 1.7em var(--fd);font-variant-numeric:tabular-nums;line-height:1}.jam-sisa.habis{color:var(--bad)}
+.jam-ket{font-size:.85em}
+.cw{font-size:.82em;font-weight:600;border:1px solid var(--line);border-radius:99px;padding:.2em .8em;background:var(--paper);color:var(--ink)}
+.cw.ok{background:var(--okw);border-color:var(--ok);color:var(--ok)}.cw.tl{background:var(--badw);border-color:var(--bad);color:var(--bad)}
+.bar b{position:absolute;top:0;bottom:0;left:0;width:4px;margin-left:-2px;background:var(--gold);transition:left .5s linear}
+dialog table [aria-current=true]{background:var(--accw)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media(max-width:640px){.lbl{display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <span class="brand" id="brand"></span>
+    <div class="tools">
+      <div class="hud" aria-label="Poin"><span title="Poin XP">⭐ <b id="xp">0</b> XP</span><span title="Benar beruntun">🔥 <b id="str">0</b></span></div>
+      <button class="btn s" id="b-menu" aria-label="Daftar slide">☰<span class="lbl"> Slide</span></button>
+      <button class="btn s" id="b-guru" aria-label="Panel guru">🎓<span class="lbl"> Guru</span></button>
+      <button class="btn s" id="b-tema" aria-label="Ganti tema terang atau gelap">◐</button>
+      <button class="btn s" id="b-penuh" aria-label="Layar penuh">⤢</button>
+    </div>
+  </header>
+  <div class="jam" id="jam" role="group" aria-label="Waktu pelajaran">
+    <button class="btn s" id="b-jam" aria-label="Mulai atau jeda jam pelajaran (tombol J)">Mulai jam</button>
+    <span class="jam-sisa" id="jam-sisa" role="timer">00:00</span>
+    <span class="jam-ket soft" id="jam-ket"></span>
+    <span class="cw" id="jam-slide"></span>
+    <span class="cw" id="jam-jadwal"></span>
+  </div>
+  <div class="bar" role="progressbar" aria-label="Kemajuan menurut rencana waktu" id="pb"><i id="bar"></i><b id="mk" aria-hidden="true" hidden></b></div>
+  <main id="stage" tabindex="-1"></main>
+  <footer class="nav">
+    <button class="btn o" id="b-prev" aria-label="Slide sebelumnya">←<span class="lbl"> Kembali</span></button>
+    <span class="soft" id="cnt" style="margin:0 auto;font-variant-numeric:tabular-nums"></span>
+    <button class="btn" id="b-next" aria-label="Slide berikutnya"><span class="lbl">Lanjut </span>→</button>
+  </footer>
+</div>
+
+<dialog id="dm" aria-labelledby="dmt"><div class="dh"><h2 id="dmt">Daftar slide</h2><span class="soft" id="mt"></span><button class="btn o s" data-x>Tutup ✕</button></div><div class="menu" id="mg"></div></dialog>
+
+<dialog id="dg" aria-labelledby="dgt">
+  <div class="dh"><h2 id="dgt">Panel guru</h2><button class="btn o s" data-x>Tutup ✕</button></div>
+  <div class="tabs" role="tablist"><button class="chip" role="tab" data-tab="alat" aria-selected="true">Alat kelas</button><button class="chip" role="tab" data-tab="cat" aria-selected="false">Catatan slide</button><button class="chip" role="tab" data-tab="wkt" aria-selected="false">Rencana waktu</button><button class="chip" role="tab" data-tab="pkt" aria-selected="false">Generator paket soal</button></div>
+  <section data-p="alat" style="display:grid;gap:12px">
+    <label><input type="checkbox" id="o-kunci"> <b>Tampilkan kunci jawaban.</b> <span class="soft">Matikan sebelum siswa mengerjakan.</span></label>
+    <label>Tampilan jenjang <select id="o-jenjang"><option value="sd">SD</option><option value="smp">SMP</option><option value="sma">SMA/SMK</option></select></label>
+    <div class="kartu"><h3>🎲 Pilih siswa acak</h3>
+      <label class="soft" for="nama">Satu nama per baris (tersimpan hanya selama halaman terbuka)</label>
+      <textarea id="nama" rows="4" style="width:100%"></textarea>
+      <div class="aksi" style="margin-top:8px"><button class="btn" id="b-acak">Pilih sekarang</button><b class="big" style="font-size:1.6em" id="terpilih" aria-live="polite"></b></div></div>
+    <div class="kartu"><h3>⏱ Jam pelajaran</h3>
+      <p class="soft">Jam di atas layar menghitung mundur dari total alokasi dan membandingkannya dengan rencana tiap slide (lihat tab Rencana waktu). Pintasan: tombol J.</p>
+      <div class="aksi" style="margin-top:8px"><button class="btn o" id="b-jam-reset">Atur ulang jam</button><span class="soft" id="st-jam" aria-live="polite"></span></div></div>
+    <div class="aksi"><button class="btn o" id="b-reset">Hapus semua poin siswa</button><span class="soft" id="st-reset" aria-live="polite"></span></div>
+  </section>
+  <section data-p="cat" hidden><p class="eb" id="cat-meta"></p><p id="cat-isi" class="lead"></p><p class="soft" id="kisi" style="margin-top:1em"></p></section>
+  <section data-p="wkt" hidden><p class="soft" id="wkt-ket" aria-live="polite"></p><div style="overflow-x:auto"><table id="wkt-tab"></table></div></section>
+  <section data-p="pkt" hidden>
+    <p class="soft">Buat paket soal acak berjenjang dari bank soal. Soal hitungan memakai angka baru setiap kali dibuat.</p>
+    <div class="aksi" style="margin:10px 0">
+      <label>Level 1 <input type="number" id="j1" min="0" max="20" value="4" style="width:5em"></label>
+      <label>Level 2 <input type="number" id="j2" min="0" max="20" value="4" style="width:5em"></label>
+      <label>Level 3 <input type="number" id="j3" min="0" max="20" value="3" style="width:5em"></label>
+      <label><input type="checkbox" id="o-bahas" checked> Pembahasan</label>
+      <button class="btn" id="b-paket">Buat paket</button><button class="btn o" id="b-salin" disabled>Salin teks</button></div>
+    <p class="soft" id="st-paket" aria-live="polite"></p><ol class="pkt" id="paket-out"></ol><textarea id="paket-teks" rows="8" style="width:100%" readonly hidden aria-label="Teks paket soal"></textarea>
+  </section>
+</dialog>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+"use strict";
+/* =====================================================================
+   ===================  EDIT KONTEN DI SINI  ============================
+   Teks boleh memakai HTML sederhana: <b>, <i>, <br>, <sup>, <sub>.
+   Contoh isi: Persamaan Linear Satu Variabel (Matematika, Kelas VIII).
+   WAKTU: jumlah semua nilai "waktu" (menit) pada SLIDES harus sama dengan
+   CONFIG.jp x CONFIG.menitJP. Jika berbeda, jam di atas layar dan Panel guru
+   (tab Rencana waktu) memberi peringatan.
+   ===================================================================== */
+const CONFIG = {
+  judul: 'Persamaan Linear Satu Variabel (PLSV)', mapel: 'Matematika', kelas: 'VIII', fase: 'D',
+  guru: 'Pak Hazz', sekolah: 'SMP/MTs', jenjang: 'smp',          // 'sd' | 'smp' | 'sma' mengubah warna dan sudut
+  jp: 2, menitJP: 40,                                            // alokasi waktu: 2 JP x 40 menit = 80 menit (umumnya SD 35, SMP 40, SMA/SMK 45; sesuaikan kebijakan sekolah)
+  tp: { TP1: 'Memaknai variabel dan penyelesaian persamaan memakai model neraca.', TP2: 'Menyelesaikan PLSV dengan prinsip kesetaraan, lengkap dengan alasan tiap langkah.', TP3: 'Menyusun dan menyelesaikan model PLSV dari masalah sehari-hari, lalu memeriksa jawaban.' }
+};
+
+/* ---- Alat gambar dan format (dipakai slide dan bank soal) ---- */
+const tanda = n => String(n).replace('-', '−');
+function suku(a, c) {                     // 3, 5 -> "3x + 5" ; 1, 0 -> "x" ; 0, 8 -> "8"
+  const t = [];
+  if (a) t.push(a === 1 ? 'x' : a + 'x');
+  if (c || !t.length) t.push(String(c));
+  return t.join(' + ').replace('+ -', '− ');
+}
+/* Neraca SVG. L, R = { x: banyak kardus, c: jeruk lepas }; xv = isi satu kardus.
+   Opsi o: x (tulis isi kardus pada kardus), total (tampilkan total jeruk tiap piringan). */
+function neraca(L, R, xv, o = {}) {
+  const ml = L.x * xv + L.c, mr = R.x * xv + R.c, sel = mr - ml;
+  const rad = Math.max(-14, Math.min(14, sel * 1.5)) * Math.PI / 180;
+  const cx = 200, cy = 70, ex = 130 * Math.cos(rad), ey = 130 * Math.sin(rad);
+  const f = n => n.toFixed(1);
+  const ln = (x1, y1, x2, y2, w = 1.5) => `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="currentColor" stroke-width="${w}" stroke-linecap="round"/>`;
+  const piringan = (px, py, sisi, nama, total) => {
+    const y0 = py + 46, nk = Math.min(sisi.x, 5), w = 20, dasar = y0 - (nk ? 24 : 0);
+    let g = ln(px, py, px - 50, y0) + ln(px, py, px + 50, y0);
+    for (let i = 0; i < nk; i++) {
+      const bx = px - nk * w / 2 + i * w + 1;
+      g += `<rect x="${f(bx)}" y="${f(y0 - 22)}" width="${w - 2}" height="22" rx="3" fill="#e8a317" stroke="currentColor" stroke-width="1.5"/><text x="${f(bx + (w - 2) / 2)}" y="${f(y0 - 7)}" text-anchor="middle" font-size="${o.x ? 11 : 13}" font-weight="800" fill="#1b2430">${o.x ? xv : 'x'}</text>`;
+    }
+    if (sisi.c > 18) g += `<circle cx="${f(px)}" cy="${f(dasar - 14)}" r="14" fill="#f97316" stroke="#9a3412"/><text x="${f(px)}" y="${f(dasar - 9)}" text-anchor="middle" font-size="13" font-weight="800" fill="#1b2430">${sisi.c}</text>`;
+    else for (let j = 0; j < sisi.c; j++) g += `<circle cx="${f(px - 32.5 + (j % 6) * 13)}" cy="${f(dasar - 6.5 - Math.floor(j / 6) * 12.5)}" r="5.5" fill="#f97316" stroke="#9a3412"/>`;
+    g += `<path d="M${f(px - 56)} ${f(y0)} Q${f(px)} ${f(y0 + 20)} ${f(px + 56)} ${f(y0)} Z" fill="var(--accw)" stroke="currentColor" stroke-width="2"/>`;
+    g += `<text x="${f(px)}" y="${f(y0 + 38)}" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">${nama}</text>`;
+    if (o.total) g += `<text x="${f(px)}" y="${f(y0 + 54)}" text-anchor="middle" font-size="13" font-weight="800" fill="currentColor">${total} jeruk</text>`;
+    return g;
+  };
+  const status = sel === 0 ? 'seimbang' : sel < 0 ? 'miring ke kiri' : 'miring ke kanan';
+  return `<svg viewBox="0 0 400 270" role="img" aria-label="Neraca ${status}. Ruas kiri: ${L.x} kardus dan ${L.c} jeruk lepas. Ruas kanan: ${R.x} kardus dan ${R.c} jeruk lepas." style="width:100%;max-width:460px;color:var(--ink)">
+    <path d="M200 70 L172 238 L228 238 Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2"/><rect x="146" y="238" width="108" height="9" rx="4" fill="currentColor"/>
+    ${ln(cx - ex, cy - ey, cx + ex, cy + ey, 7)}${piringan(cx - ex, cy - ey, L, 'Ruas kiri', ml)}${piringan(cx + ex, cy + ey, R, 'Ruas kanan', mr)}
+    <circle cx="${cx}" cy="${cy}" r="8" fill="#e8a317" stroke="currentColor" stroke-width="2.5"/>
+    <text x="${cx}" y="34" text-anchor="middle" font-size="14" font-weight="800" fill="${sel === 0 ? 'var(--ok)' : 'var(--bad)'}">${sel === 0 ? '✓ seimbang' : 'miring'}</text></svg>`;
+}
+
+const SLIDES = [
+  { tipe: 'judul', waktu: 2, judul: CONFIG.judul, sub: 'Satu kardus jeruk yang tertutup, satu neraca, dan satu pertanyaan: berapa isi kardus itu? Kita temukan sendiri aturannya.',
+    catatan: 'Sambut siswa (2 menit). Tekan Mulai jam di atas layar tepat saat pelajaran dimulai, sebelum salam. Tanyakan: kalau kardusnya tertutup, bagaimana cara tahu isinya tanpa membukanya? Jangan dijawab dulu, biarkan rasa penasaran tumbuh.' },
+
+  { tipe: 'materi', id: 'tujuan', waktu: 2, label: 'Tujuan', judul: 'Apa yang akan kamu capai hari ini?', penanda: 'TP',
+    poin: ['Memaknai variabel dan penyelesaian persamaan memakai model neraca.', 'Menyelesaikan PLSV (bentuk ax + b = c, variabel di dua ruas, dan bentuk kurung) dengan alasan tiap langkah.', 'Menyusun dan menyelesaikan model PLSV dari cerita sehari-hari, lalu memeriksa jawabannya.'],
+    catatan: 'Baca tiga tujuan, minta siswa menyebutkan kata kerjanya (memaknai, menyelesaikan, menyusun). Di akhir pelajaran siswa menilai dirinya terhadap tiga tujuan ini. Sesuaikan rumusan dengan CP/ATP sekolah; kesesuaian dengan dokumen resmi belum dicocokkan.' },
+
+  { tipe: 'pemantik', id: 'pemantik', waktu: 5, label: 'Situasi nyata', judul: 'Berapa jeruk di dalam satu kardus?', detik: 60,
+    soal: 'Neraca di toko buah seimbang. Di piringan kiri ada <b>2 kardus jeruk</b> yang isinya sama dan <b>3 jeruk lepas</b>. Di piringan kanan ada <b>11 jeruk lepas</b>. Menurutmu, berapa jeruk di dalam satu kardus? Bagaimana caramu tahu?',
+    petunjuk: ['Kalau satu kardus berisi 3 jeruk, berapa jeruk di piringan kiri? Seimbang atau belum?', 'Coba singkirkan 3 jeruk lepas dari kedua piringan. Apa yang tersisa di kiri dan di kanan?'],
+    gambar: neraca({ x: 2, c: 3 }, { x: 0, c: 11 }, 4, {}),
+    catatan: 'Beri 60 detik berpikir tanpa rumus, lalu diskusi dengan teman sebelah (total 5 menit). Jangan bahas jawaban sekarang; cukup kumpulkan 2 sampai 3 dugaan dan strategi (menebak, mencoba, mengurangi). Slide berikutnya menguji dugaan itu.' },
+
+  { tipe: 'simulasi', id: 'eks1', waktu: 7, label: 'Eksplorasi 1', judul: 'Kapan neraca seimbang?',
+    soal: 'Geser isi 1 kardus lalu amati neraca. <b>Tebak dulu:</b> kapan kedua piringan sama berat? Catat minimal 3 percobaan.', minCatat: 3,
+    slider: [{ k: 'x', label: 'Isi 1 kardus (x)', min: 1, max: 8, val: 2 }],
+    hasil: v => { const kiri = 2 * v.x + 3; return [['Ruas kiri: 2x + 3', kiri + ' jeruk'], ['Ruas kanan', '11 jeruk'], ['Neraca', kiri === 11 ? '✓ Seimbang' : kiri < 11 ? 'Miring ke kanan (kiri ringan)' : 'Miring ke kiri (kiri berat)']]; },
+    kolom: ['x', 'Kiri: 2x + 3', 'Kanan', 'Neraca'], baris: v => { const kiri = 2 * v.x + 3; return [v.x, kiri, 11, kiri === 11 ? 'Seimbang' : kiri < 11 ? 'Kiri ringan' : 'Kiri berat']; },
+    gambar: v => neraca({ x: 2, c: 3 }, { x: 0, c: 11 }, v.x, { x: true, total: true }),
+    temuan: 'Neraca hanya seimbang saat satu kardus berisi 4 jeruk. Nilai x yang membuat kedua ruas sama itulah penyelesaian persamaan 2x + 3 = 11.',
+    catatan: 'Inti: siswa menemukan sendiri arti penyelesaian. Minta menebak sebelum menggeser. Pancing: adakah nilai x lain yang juga membuat seimbang? Mengapa kamu yakin hanya satu? Jika siswa sudah menemukan x = 4 sebelum 3 data, minta mereka mencatat data lain sebagai bukti.' },
+
+  { tipe: 'flipcard', id: 'istilah', waktu: 3, label: 'Istilah', judul: 'Kenali istilahnya',
+    kartu: [{ d: 'Variabel', b: 'Huruf (misalnya x) yang mewakili bilangan yang belum diketahui. Di neraca: isi satu kardus.' },
+            { d: 'Koefisien', b: 'Angka di depan variabel. Pada 3x, koefisiennya 3 (ada 3 kardus).' },
+            { d: 'Konstanta', b: 'Suku tanpa variabel. Pada 3x + 5, konstantanya 5 (jeruk lepas).' },
+            { d: 'Ruas', b: 'Sisi kiri atau sisi kanan tanda sama dengan (piringan kiri atau kanan).' },
+            { d: 'Penyelesaian', b: 'Nilai variabel yang membuat kedua ruas sama. Pada 2x + 3 = 11, penyelesaiannya x = 4.' },
+            { d: 'Persamaan setara', b: 'Persamaan yang penyelesaiannya sama, misalnya 2x + 3 = 11 dan 2x = 8.' }],
+    catatan: 'Minta siswa menebak arti tiap istilah dari gambar neraca sebelum kartu dibuka. Hubungkan setiap istilah dengan benda di neraca.' },
+
+  { tipe: 'simulasi', id: 'eks2', waktu: 9, label: 'Eksplorasi 2', judul: 'Apa yang boleh dilakukan pada neraca?',
+    soal: 'Neraca ini seimbang: <b>3 kardus + 5 jeruk</b> di kiri, <b>1 kardus + 15 jeruk</b> di kanan. Ambil jumlah yang sama dari kedua piringan dan catat. Lalu coba <b>menambah jeruk di kiri saja</b>. Apa yang terjadi?', minCatat: 4,
+    slider: [{ k: 'p', label: 'Kardus diambil dari kedua piringan', min: 0, max: 1, val: 0 }, { k: 'q', label: 'Jeruk diambil dari kedua piringan', min: 0, max: 5, val: 0 }, { k: 'r', label: 'Jeruk ditambah di piringan kiri saja', min: 0, max: 3, val: 0 }],
+    hasil: v => { const L = { x: 3 - v.p, c: 5 - v.q + v.r }, Rr = { x: 1 - v.p, c: 15 - v.q }; return [['Ruas kiri', suku(L.x, L.c)], ['Ruas kanan', suku(Rr.x, Rr.c)], ['Neraca', v.r === 0 ? '✓ Seimbang' : 'Miring ke kiri']]; },
+    kolom: ['Kardus diambil', 'Jeruk diambil', 'Tambah kiri saja', 'Persamaan baru', 'Neraca'],
+    baris: v => [v.p, v.q, v.r, `${suku(3 - v.p, 5 - v.q + v.r)} = ${suku(1 - v.p, 15 - v.q)}`, v.r === 0 ? 'Seimbang' : 'Miring'],
+    gambar: v => neraca({ x: 3 - v.p, c: 5 - v.q + v.r }, { x: 1 - v.p, c: 15 - v.q }, 5, {}),
+    temuan: 'Selama jumlah yang diambil sama di kedua piringan, neraca tetap seimbang dan nilai x tidak berubah (akhirnya 2 kardus = 10 jeruk, jadi x = 5). Begitu satu piringan saja yang diubah, neraca miring dan persamaannya tidak lagi setara.',
+    catatan: 'Prinsip kesetaraan ditemukan lewat manipulasi. Variasi (变式): bentuk berbeda dari Eksplorasi 1, tetapi aturan neracanya sama. Pastikan ada siswa yang mencatat kasus "tambah kiri saja" dan menjelaskan mengapa neraca miring. Tanyakan: apa yang akan terjadi pada x yang kita cari jika kita curang?' },
+
+  { tipe: 'konsep', id: 'konsep', waktu: 5, label: 'Konsep', judul: 'Bagaimana aturan menyelesaikan PLSV?',
+    tab: [{ n: 'Definisi', h: '<p class="lead">Persamaan linear satu variabel (PLSV) adalah kalimat dengan tanda <b>=</b> yang memuat <b>satu variabel</b> berpangkat satu.</p><p class="formula">ax + b = c</p><p>dengan <b>a ≠ 0</b>. Variabel boleh ada di kedua ruas, yaitu <b>ax + b = cx + d</b> (asal a ≠ c). <b>Penyelesaian</b> adalah nilai x yang membuat kedua ruas sama.</p><p class="soft">Di neraca: a = banyak kardus, b = jeruk lepas, tanda = berarti seimbang.</p>' },
+          { n: 'Prinsip kesetaraan', h: '<p class="lead">Neraca tetap seimbang jika kedua piringan diubah dengan cara yang sama.</p><p class="formula">A = B &nbsp;⇒&nbsp; A ± k = B ± k</p><p>Kedua ruas boleh <b>ditambah</b> atau <b>dikurangi</b> bilangan yang sama. Kedua ruas juga boleh <b>dikali</b> atau <b>dibagi</b> bilangan yang sama, <b>asal bukan nol</b>. Hasilnya persamaan setara, penyelesaiannya tidak berubah.</p>' },
+          { n: 'Langkah baku', h: '<ol><li>Buka kurung bila ada.</li><li>Kumpulkan suku x di satu ruas (ambil kardus yang sama dari kedua ruas).</li><li>Kumpulkan angka di ruas lainnya.</li><li>Bagi kedua ruas dengan koefisien x.</li><li>Periksa: masukkan hasil ke persamaan awal.</li></ol><p class="soft">Contoh: 3x + 5 = x + 15 → 2x + 5 = 15 → 2x = 10 → x = 5.</p>' },
+          { n: 'Salah kaprah', h: '<ul><li><b>Mengubah satu ruas saja.</b> Mengurangi 3 hanya di kiri membuat neraca miring.</li><li><b>Salah tanda saat memindah angka.</b> Dari x + 7 = 15, hasilnya x = 15 − 7, bukan 15 + 7.</li><li><b>Kurung tidak dibuka penuh.</b> 2(x + 3) = 2x + 6, bukan 2x + 3.</li><li><b>Membagi sebagian suku.</b> Dari 2x + 6 = 16, tidak boleh menulis x + 6 = 8.</li><li><b>Tidak memeriksa jawaban.</b> Substitusi hanya sebentar dan menangkap sebagian besar kesalahan.</li></ul>' }],
+    catatan: 'Hubungkan temuan siswa di dua eksplorasi dengan bahasa formal (5 menit). Gunakan tab Salah kaprah untuk meluruskan miskonsepsi sebelum latihan. Tegaskan mengapa pembagi tidak boleh nol.' },
+
+  { tipe: 'langkah', id: 'contoh', waktu: 6, label: 'Contoh', judul: 'Bagaimana langkah menyelesaikan 5x − 3 = 2x + 9?',
+    soal: 'Selesaikan <b>5x − 3 = 2x + 9</b> dan tulis alasan tiap langkah. Perhatikan: ada tanda negatif di ruas kiri.',
+    langkah: [['Kenali bentuk dan tujuan', 'Kardus x ada di kedua ruas dan ada −3 di kiri. Kumpulkan x dulu.'], ['Kurangi 2x di kedua ruas: 3x − 3 = 9', 'Ruas kanan: 2x − 2x = 0, tersisa 9.'], ['Tambah 3 di kedua ruas: 3x = 12', 'Menambah 3 menetralkan −3 di kiri. Ruas kanan: 9 + 3 = 12.'],
+              ['Bagi kedua ruas dengan 3: x = 4', 'Tiga kardus berisi 12 jeruk, jadi satu kardus berisi 4.'], ['Periksa dengan substitusi', 'Kiri: 5(4) − 3 = 17. Kanan: 2(4) + 9 = 17. Sama, jadi x = 4 benar.']],
+    catatan: 'Sebelum membuka tiap langkah, tanyakan: menurutmu langkah berikutnya apa, dan mengapa? Langkah terakhir (periksa) sering dilewati siswa; beri penekanan. Jika waktu mepet, buka dua langkah sekaligus tetapi jangan lewati alasan.' },
+
+  { tipe: 'urutkan', id: 'urut', waktu: 4, label: 'Latihan', judul: 'Susun langkah menyelesaikan bentuk kurung',
+    soal: 'Selesaikan <b>2(x + 3) = x + 9</b>. Susun langkahnya. <b>Awas, ada satu langkah pengecoh.</b>',
+    langkah: ['Buka kurung: 2(x + 3) = 2x + 6, sehingga 2x + 6 = x + 9.', 'Kurangi kedua ruas dengan x: x + 6 = 9.', 'Kurangi kedua ruas dengan 6: x = 3.', 'Periksa: kiri 2(3 + 3) = 12, kanan 3 + 9 = 12. Sama.'],
+    pengecoh: 'Kurangi ruas kiri saja dengan x: x + 6 = x + 9.', pesanPengecoh: 'Langkah itu hanya mengubah satu ruas, sehingga neraca miring dan persamaannya tidak lagi setara. Pengurangan harus dilakukan di kedua ruas.',
+    pola: 'Pola berpikirnya: buka kurung, kumpulkan x, kumpulkan angka, lalu periksa.',
+    catatan: 'Beri 3 menit kerja berpasangan, 1 menit pembahasan. Tanyakan mengapa pengecoh itu menggoda (kelihatan seperti langkah yang benar).' },
+
+  { tipe: 'benar-salah', id: 'bs', waktu: 3, label: 'Kuis cepat', judul: 'Benar atau salah?',
+    pernyataan: [{ t: '2x + 3 = 11 dan 2x = 8 adalah persamaan yang setara.', j: true, a: 'Kedua ruas dikurangi 3, penyelesaiannya tetap x = 4.' },
+                 { t: 'Pada 3x = 12, kedua ruas boleh dikali 0 supaya lebih mudah.', j: false, a: 'Dikali 0 membuat kedua ruas menjadi 0 dan informasi tentang x hilang. Yang boleh adalah dikali atau dibagi bilangan bukan nol.' },
+                 { t: 'Penyelesaian 5x − 2 = 3x + 6 adalah x = 4.', j: true, a: 'Kiri: 5(4) − 2 = 18. Kanan: 3(4) + 6 = 18.' },
+                 { t: 'Bentuk 2(x + 3) sama dengan 2x + 3.', j: false, a: 'Pengali 2 berlaku untuk kedua suku: 2(x + 3) = 2x + 6.' }],
+    catatan: 'Siswa menjawab dulu di buku, baru ketuk jawaban. Minta satu siswa menjelaskan alasan setiap pernyataan.' },
+
+  { tipe: 'pasangkan', id: 'pasang', waktu: 3, label: 'Aktivitas', judul: 'Pasangkan persamaan dengan penyelesaiannya',
+    instruksi: 'Ketuk satu persamaan di kiri, lalu penyelesaiannya di kanan.',
+    pasangan: [{ k: 'x + 9 = 20', r: 'x = 11' }, { k: '4x = 28', r: 'x = 7' }, { k: '3x − 5 = 10', r: 'x = 5' }, { k: '2(x + 1) = 18', r: 'x = 8' }],
+    catatan: 'Aktivitas cepat. Dorong siswa memeriksa dengan substitusi, bukan menebak.' },
+
+  { tipe: 'kuis', id: 'kuis', waktu: 6, label: 'Kuis', judul: 'Cek pemahamanmu', jumlah: { 1: 2, 2: 2, 3: 1 },
+    catatan: 'Lima soal acak berjenjang dari bank soal. Soal salah otomatis masuk ke slide Tinjau kesalahan. Matikan kunci jawaban di Panel guru sebelum siswa mengerjakan.' },
+
+  { tipe: 'latihan', id: 'latihan', waktu: 10, label: 'Latihan mandiri', judul: 'Soal selalu baru',
+    levelNama: ['Satu dan dua langkah', 'Dua ruas, tanda negatif, kurung', 'Cerita dan bentuk c − ax'],
+    catatan: 'Soal dibangkitkan acak dengan angka berbeda (bukan sekadar urutan). Ini rangkaian variasi (变式): inti konsep tetap, bentuk dan konteks berubah. Umpan balik diagnostik menunjuk kesalahan seperti lupa membagi, salah tanda, atau kurung tidak dibuka penuh. Anjurkan siswa naik level setelah 2 jawaban benar tanpa petunjuk.' },
+
+  { tipe: 'tinjau', id: 'tinjau', waktu: 4, label: 'Tinjau kesalahan', judul: 'Belajar dari jawaban yang belum tepat',
+    catatan: 'Slide ini otomatis menampilkan soal yang salah dari kuis, benar-salah, dan latihan, lengkap dengan penyebab dan perbaikannya (错题回顾). Minta siswa memilih satu kesalahan, menjelaskan penyebabnya kepada teman, lalu mengerjakan ulang soal serupa di slide Latihan.' },
+
+  { tipe: 'langkah', id: 'papan', waktu: 3, label: 'Ringkasan', judul: 'Papan tulis: langkah baku menyelesaikan PLSV',
+    soal: 'Tulis papan tulis bersama. Bentuk umum: <span class="formula">ax + b = cx + d</span>',
+    langkah: [['1. Buka kurung', 'Jabarkan semua suku: 2(x + 3) = 2x + 6.'], ['2. Kumpulkan suku x', 'Ambil kardus yang sama dari kedua ruas sampai x tinggal di satu ruas.'], ['3. Kumpulkan angka', 'Ambil jeruk lepas yang sama dari kedua ruas.'],
+              ['4. Bagi dengan koefisien x', 'Bagi kedua ruas dengan bilangan yang sama, bukan nol.'], ['5. Periksa', 'Masukkan hasil ke persamaan awal. Kedua ruas harus sama.']],
+    catatan: 'Bangun ringkasan bertahap sambil bertanya: apa langkah berikutnya dan mengapa? Siswa menyalin ke buku (板书式总结).' },
+
+  { tipe: 'diskusi', id: 'tantangan', waktu: 4, label: 'Tantangan', judul: 'Dari cerita ke persamaan, lalu rancang soalmu', durasi: 150,
+    soal: 'Pak Hazz membeli <b>4 kardus spidol</b> yang isinya sama dan <b>3 spidol lepas</b>. Seluruhnya ada <b>35 spidol</b>. Berapa isi satu kardus? <b>Lalu rancang soalmu sendiri</b>: buat persamaan ax + b = cx + d yang penyelesaiannya x = 6.',
+    langkah: ['Tulis modelnya: 4x + 3 = 35.', 'Kurangi 3 di kedua ruas, lalu bagi 4. Periksa dengan memasukkan hasil ke cerita.', 'Rancang soal: pilih a = 5 dan c = 2, lalu hitung b dan d supaya kedua ruas sama saat x = 6.'],
+    jawab: 'x = 8 spidol per kardus (4(8) + 3 = 35). Contoh rancangan: 5x + 2 = 2x + 20. Saat x = 6, kiri 5(6) + 2 = 32 dan kanan 2(6) + 20 = 32. Tukarkan soalmu dengan teman dan selesaikan.',
+    catatan: 'Perluasan (拓展): siswa mengubah cerita menjadi model, lalu menjadi pembuat soal. Berikan 2,5 menit diskusi, 1,5 menit pembahasan. Siswa yang cepat boleh merancang soal dengan kurung.' },
+
+  { tipe: 'refleksi', id: 'refleksi', waktu: 3, label: 'Refleksi', judul: 'Seberapa jauh kamu sudah sampai?',
+    tujuan: [{ t: 'Aku bisa menjelaskan arti variabel dan penyelesaian persamaan memakai neraca.', ulang: 'eks1' }, { t: 'Aku bisa menyelesaikan PLSV dan menjelaskan alasan tiap langkah.', ulang: 'contoh' }, { t: 'Aku bisa mengubah cerita menjadi persamaan dan menyelesaikannya.', ulang: 'tantangan' }],
+    tiket: 'Jelaskan kepada temanmu: <b>mengapa jeruk yang diambil dari satu piringan harus diambil sama banyak dari piringan lain?</b>',
+    contoh: 'Tanda sama dengan berarti kedua ruas bernilai sama, seperti neraca yang seimbang. Jika hanya satu sisi yang diubah, neraca miring dan kedua ruas tidak lagi sama, sehingga nilai x yang kita hitung ikut salah. Mengubah kedua ruas dengan cara yang sama menjaga kesetaraan.',
+    catatan: 'Tiga menit: penilaian diri 1 menit, tiket keluar 2 menit. Siswa yang menjawab Belum paham diarahkan mengulang slide terkait, lalu dicatat untuk remedial.' },
+
+  { tipe: 'rekap', waktu: 1, label: 'Rekap', judul: 'Hasil belajarmu hari ini',
+    catatan: 'Tutup dengan menunjukkan rekap poin dan lencana. Tanyakan satu hal yang paling mengubah cara berpikir siswa hari ini.' }
+];
+
+/* BANK SOAL (dipakai Kuis, Latihan, dan Generator paket soal)
+   level 1|2|3 · kognitif 'C1'…'C6' · tp kode dari CONFIG.tp
+   tipe 'pg'  : opsi[] + kunci (indeks opsi benar). Urutan opsi diacak otomatis.
+   tipe 'bs'  : kunci true/false.
+   tipe 'gen' : gen() mengembalikan { soal, jawab (bilangan bulat > 0), satuan, label (opsional, teks di kotak jawaban), salah:[[nilai,'pesan diagnosis'],…], petunjuk:[…], langkah:[…] }.
+                Angka dibuat acak setiap kali; pengecoh dan pesan salah berasal dari kesalahan umum siswa. */
+const BANK = [
+  { id: 'L1-G1', level: 1, tp: 'TP2', kognitif: 'C3', tipe: 'gen', indikator: 'Menyelesaikan x + b = c', gen() { const x = R(2, 15), b = R(2, 12), c = x + b;
+    return { soal: `Selesaikan <b>x + ${b} = ${c}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[c + b, `Kamu menjumlahkan ${c} + ${b}. Untuk menghilangkan +${b} di kiri, kedua ruas dikurangi ${b}.`], [c, `${c} adalah isi seluruh ruas kanan. Ambil ${b} jeruk lepas dari kedua ruas lebih dulu.`]],
+      petunjuk: [`Bayangkan neraca: 1 kardus dan ${b} jeruk lepas di kiri, ${c} jeruk di kanan.`, `Ambil ${b} jeruk dari kedua piringan.`],
+      langkah: [`x + ${b} = ${c}`, `Kurangi ${b} di kedua ruas: x = ${c} − ${b}`, `x = ${x}`, `Periksa: ${x} + ${b} = ${c}`] }; } },
+  { id: 'L1-G2', level: 1, tp: 'TP2', kognitif: 'C3', tipe: 'gen', indikator: 'Menyelesaikan ax = c', gen() { const a = R(2, 9), x = R(2, 12), c = a * x;
+    return { soal: `Selesaikan <b>${a}x = ${c}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[c - a, `Kamu mengurangi ${a}. Pada ${a}x, ${a} adalah pengali, jadi kedua ruas dibagi ${a}.`], [c * a, `Kamu mengalikan dengan ${a}. Lawan dari kali adalah bagi.`]],
+      petunjuk: [`${a}x berarti ${a} kardus berisi ${c} jeruk.`, `Bagi kedua ruas dengan ${a}.`],
+      langkah: [`${a}x = ${c}`, `Bagi kedua ruas dengan ${a}: x = ${c} ÷ ${a}`, `x = ${x}`, `Periksa: ${a} × ${x} = ${c}`] }; } },
+  { id: 'L1-G3', level: 1, tp: 'TP2', kognitif: 'C3', tipe: 'gen', indikator: 'Menyelesaikan ax + b = c', gen() { const a = R(2, 6), x = R(2, 12), b = R(1, 15), c = a * x + b;
+    return { soal: `Selesaikan <b>${a}x + ${b} = ${c}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[c - b, `Langkah pertamamu benar (${a}x = ${c - b}), tetapi itu isi ${a} kardus. Bagi dengan ${a}.`], [(c + b) / a, `Kamu menambah ${b}. Untuk menghilangkan +${b}, kedua ruas dikurangi ${b}.`], [c / a - b, `Kamu membagi ${c} dengan ${a} sebelum mengurangi ${b}. Kurangi ${b} dulu, baru bagi seluruh ruas.`]],
+      petunjuk: [`Ambil ${b} jeruk lepas dari kedua piringan.`, `Setelah itu tersisa ${a} kardus. Bagi kedua ruas dengan ${a}.`],
+      langkah: [`${a}x + ${b} = ${c}`, `Kurangi ${b}: ${a}x = ${c} − ${b} = ${c - b}`, `Bagi ${a}: x = ${c - b} ÷ ${a} = ${x}`, `Periksa: ${a}(${x}) + ${b} = ${c}`] }; } },
+  { id: 'L1-01', level: 1, tp: 'TP1', kognitif: 'C1', tipe: 'pg', indikator: 'Mengenali koefisien', soal: 'Pada 3x + 5 = 20, bilangan 3 disebut …',
+    opsi: ['koefisien', 'konstanta', 'variabel', 'penyelesaian'], kunci: 0, pembahasan: 'Koefisien adalah angka di depan variabel. Di neraca, 3x berarti 3 kardus.' },
+  { id: 'L1-02', level: 1, tp: 'TP1', kognitif: 'C2', tipe: 'bs', indikator: 'Memeriksa penyelesaian dengan substitusi', soal: 'x = 4 adalah penyelesaian dari 2x + 3 = 11.', kunci: true, pembahasan: 'Substitusi: 2(4) + 3 = 11, kedua ruas sama.' },
+  { id: 'L1-03', level: 1, tp: 'TP2', kognitif: 'C2', tipe: 'pg', indikator: 'Memilih langkah pertama yang tepat', soal: 'Langkah pertama yang tepat untuk menyelesaikan x + 7 = 15 adalah …',
+    opsi: ['mengurangi kedua ruas dengan 7', 'menambah kedua ruas dengan 7', 'mengurangi ruas kiri dengan 7 saja', 'membagi kedua ruas dengan 7'], kunci: 0, pembahasan: 'Untuk menghilangkan +7 di kiri, kurangi 7 di kedua ruas sehingga x = 8.' },
+
+  { id: 'L2-G1', level: 2, tp: 'TP2', kognitif: 'C3', tipe: 'gen', indikator: 'Menyelesaikan ax − b = c', gen() { const a = R(2, 6), x = R(3, 12), b = R(1, Math.min(9, a * x - 1)), c = a * x - b;
+    return { soal: `Selesaikan <b>${a}x − ${b} = ${c}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[c - b, `Kamu mengurangi ${b} lagi. Untuk menetralkan −${b}, kedua ruas ditambah ${b}.`], [c + b, `Langkah pertamamu benar (${a}x = ${c + b}), tetapi itu isi ${a} kardus. Bagi dengan ${a}.`], [(c - b) / a, `Tanda −${b} dinetralkan dengan menambah ${b}, bukan mengurangi.`]],
+      petunjuk: [`Ruas kiri kurang ${b} jeruk. Netralkan dengan menambah ${b} di kedua ruas.`, `Setelah ditambah, bagi kedua ruas dengan ${a}.`],
+      langkah: [`${a}x − ${b} = ${c}`, `Tambah ${b} di kedua ruas: ${a}x = ${c} + ${b} = ${c + b}`, `Bagi ${a}: x = ${x}`, `Periksa: ${a}(${x}) − ${b} = ${c}`] }; } },
+  { id: 'L2-G2', level: 2, tp: 'TP2', kognitif: 'C3', tipe: 'gen', indikator: 'Menyelesaikan ax + b = cx + d', gen() { const c = R(1, 4), k = R(2, 4), a = c + k, x = R(2, 10), b = R(1, 10), d = k * x + b;
+    return { soal: `Selesaikan <b>${suku(a, b)} = ${suku(c, d)}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[(d - b) / (a + c), `Kamu menjumlahkan koefisien ${a} + ${c}. Kardus yang sama di dua ruas dikurangkan: ${a}x − ${c}x = ${k}x.`], [d - b, `Itu isi ${k} kardus (${k}x = ${d - b}). Bagi kedua ruas dengan ${k}.`], [(d + b) / k, `Kamu menjumlahkan ${b} dan ${d}. Untuk menghilangkan +${b} di kiri, kedua ruas dikurangi ${b}.`]],
+      petunjuk: [`Kardus ada di kedua ruas. Ambil ${suku(c, 0)} dari kedua piringan.`, `Setelah itu ambil ${b} jeruk dari kedua piringan, lalu bagi dengan ${k}.`],
+      langkah: [`${suku(a, b)} = ${suku(c, d)}`, `Kurangi ${suku(c, 0)} di kedua ruas: ${suku(k, b)} = ${d}`, `Kurangi ${b} di kedua ruas: ${suku(k, 0)} = ${d - b}`, `Bagi ${k}: x = ${x}`, `Periksa: kiri ${a * x + b}, kanan ${c * x + d}`] }; } },
+  { id: 'L2-G3', level: 2, tp: 'TP2', kognitif: 'C3', tipe: 'gen', indikator: 'Menyelesaikan bentuk kurung p(x + q) = c', gen() { const p = R(2, 5), q = R(1, 8), x = R(2, 10), c = p * (x + q);
+    return { soal: `Selesaikan <b>${p}(x + ${q}) = ${c}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[(c - q) / p, `Kamu hanya mengalikan ${p} dengan x. Kurung dibuka penuh: ${p}(x + ${q}) = ${p}x + ${p * q}.`], [c / p, `Itu nilai (x + ${q}), bukan x. Kurangi ${q} dari hasil bagi.`], [c - p * q, `Itu isi ${p} kardus (${p}x). Bagi kedua ruas dengan ${p}.`]],
+      petunjuk: [`Ada ${p} paket, masing-masing berisi 1 kardus dan ${q} jeruk. Buka kurungnya dulu.`, `Hasilnya ${p}x + ${p * q} = ${c}. Lanjutkan seperti bentuk ax + b = c.`],
+      langkah: [`${p}(x + ${q}) = ${c}`, `Buka kurung: ${p}x + ${p * q} = ${c}`, `Kurangi ${p * q}: ${p}x = ${c - p * q}`, `Bagi ${p}: x = ${x}`, `Periksa: ${p}(${x} + ${q}) = ${c}`] }; } },
+  { id: 'L2-01', level: 2, tp: 'TP2', kognitif: 'C3', tipe: 'pg', indikator: 'Menyelesaikan ax − b = c', soal: 'Penyelesaian dari 3x − 4 = 11 adalah …', opsi: ['x = 5', 'x = 15', 'x = 7', 'x = 3'], kunci: 0,
+    pembahasan: '3x = 11 + 4 = 15, lalu x = 15 ÷ 3 = 5. Nilai 15 adalah isi 3 kardus, bukan 1 kardus.' },
+  { id: 'L2-02', level: 2, tp: 'TP2', kognitif: 'C4', tipe: 'pg', indikator: 'Menentukan langkah efisien untuk variabel di dua ruas', soal: 'Pada 5x + 2 = 2x + 14, langkah awal yang paling efisien adalah …',
+    opsi: ['mengurangi kedua ruas dengan 2x', 'menjumlahkan 5x dan 2x', 'mengurangi ruas kiri dengan 2 saja', 'membagi kedua ruas dengan 5'], kunci: 0, pembahasan: 'Kumpulkan suku x: 5x − 2x = 3x, sehingga 3x + 2 = 14. Pengurangan dilakukan di kedua ruas.' },
+  { id: 'L2-03', level: 2, tp: 'TP2', kognitif: 'C3', tipe: 'bs', indikator: 'Membuka kurung', soal: 'Hasil membuka kurung 2(x + 3) adalah 2x + 3.', kunci: false, pembahasan: 'Pengali 2 berlaku untuk kedua suku: 2(x + 3) = 2x + 6.' },
+
+  { id: 'L3-G1', level: 3, tp: 'TP2', kognitif: 'C4', tipe: 'gen', indikator: 'Menyelesaikan c − ax = d', gen() { const a = R(2, 5), x = R(2, 9), d = R(1, 10), c = a * x + d;
+    return { soal: `Selesaikan <b>${c} − ${a}x = ${d}</b>. Nilai x adalah …`, jawab: x, satuan: '', label: 'nilai x',
+      salah: [[c - d, `Itu isi ${a} kardus (${a}x = ${c - d}). Bagi kedua ruas dengan ${a}.`], [(c + d) / a, `Kamu menambah ${d}. Pindahkan ${a}x ke kanan dan ${d} ke kiri, sehingga ${c} − ${d} = ${a}x.`]],
+      petunjuk: [`Dari ${c} diambil ${a} kardus, sisanya ${d}. Berarti ${a} kardus berisi berapa jeruk?`, `${a}x = ${c} − ${d}. Lanjutkan dengan membagi ${a}.`],
+      langkah: [`${c} − ${a}x = ${d}`, `Kurangi ${c} di kedua ruas: −${a}x = ${tanda(d - c)}`, `Bagi kedua ruas dengan −${a}: x = ${tanda(d - c)} ÷ (−${a}) = ${x}`, `Periksa: ${c} − ${a}(${x}) = ${d}`] }; } },
+  { id: 'L3-G2', level: 3, tp: 'TP3', kognitif: 'C4', tipe: 'gen', indikator: 'Memodelkan dan menyelesaikan cerita ax + b = c', gen() { const [w, o] = P([['kardus', 'spidol'], ['kotak', 'penghapus'], ['kantong', 'kelereng'], ['toples', 'permen']]), n = R(2, 6), x = R(3, 12), m = R(1, 9), T = n * x + m;
+    return { soal: `Pak Hazz membeli ${n} ${w} ${o} yang isinya sama, ditambah ${m} ${o} lepas. Seluruhnya ada ${T} ${o}. Isi satu ${w} adalah …`, jawab: x, satuan: o,
+      salah: [[T - m, `Itu isi seluruh ${n} ${w} (${n}x = ${T - m}). Bagi dengan ${n}.`], [(T + m) / n, `Kamu menambah ${m}. ${m} ${o} lepas harus dikurangkan dari total.`], [T / n, `Kamu membagi total dengan ${n}, padahal ${m} ${o} lepas bukan isi ${w}. Kurangi ${m} dulu.`]],
+      petunjuk: [`Misalkan isi satu ${w} = x. Apa saja yang dijumlahkan hingga menjadi ${T}?`, `Modelnya ${n}x + ${m} = ${T}. Selesaikan seperti bentuk ax + b = c.`],
+      langkah: [`Model: ${n}x + ${m} = ${T}`, `${n}x = ${T} − ${m} = ${T - m}`, `x = ${T - m} ÷ ${n} = ${x}`, `Jadi satu ${w} berisi ${x} ${o}.`] }; } },
+  { id: 'L3-G3', level: 3, tp: 'TP3', kognitif: 'C4', tipe: 'gen', indikator: 'Memodelkan cerita dengan variabel di dua ruas', gen() { const [n1, n2] = P([['Ani', 'Budi'], ['Sari', 'Dimas'], ['Rina', 'Joko']]), [w, o] = P([['kotak', 'pensil'], ['kantong', 'kelereng'], ['toples', 'permen']]),
+      c = R(1, 3), k = R(2, 4), a = c + k, x = R(3, 10), b = R(1, 9), d = k * x + b;
+    return { soal: `${n1} memiliki ${a} ${w} ${o} dan ${b} ${o} lepas. ${n2} memiliki ${c} ${w} ${o} dan ${d} ${o} lepas. Isi tiap ${w} sama banyak, dan jumlah ${o} mereka sama. Isi satu ${w} adalah …`, jawab: x, satuan: o,
+      salah: [[(d - b) / (a + c), `Kamu menjumlahkan banyak ${w} (${a} + ${c}). Karena jumlah ${o} sama, ${w} dikurangkan: ${a} − ${c} = ${k}.`], [d - b, `Itu isi ${k} ${w}. Bagi dengan ${k}.`], [(d + b) / k, `Kamu menambah ${b}. Untuk menyamakan, ${b} ${o} lepas dikurangkan dari ${d}.`]],
+      petunjuk: [`Misalkan isi satu ${w} = x. Tulis jumlah ${o} ${n1} dan jumlah ${o} ${n2}, lalu samakan.`, `Modelnya ${suku(a, b)} = ${suku(c, d)}. Kumpulkan x di satu ruas.`],
+      langkah: [`Model: ${suku(a, b)} = ${suku(c, d)}`, `Kurangi ${suku(c, 0)} dan ${b} di kedua ruas: ${k}x = ${d} − ${b} = ${d - b}`, `x = ${d - b} ÷ ${k} = ${x}`, `Periksa: ${a * x + b} = ${c * x + d}`] }; } },
+  { id: 'L3-01', level: 3, tp: 'TP2', kognitif: 'C5', tipe: 'pg', indikator: 'Mengevaluasi penyelesaian dengan koefisien negatif',
+    soal: 'Dua siswa menyelesaikan 14 − 2x = 6. Ani menjawab x = 4, Budi menjawab x = −4. Pernyataan yang paling tepat adalah …',
+    opsi: ['Ani benar, karena 14 − 2(4) = 6', 'Budi benar, karena (−8) ÷ 2 = −4', 'Keduanya salah, karena x harus 10', 'Keduanya benar, karena tanda tidak berpengaruh'], kunci: 0,
+    pembahasan: 'Untuk x = 4: 14 − 8 = 6 (benar). Untuk x = −4: 14 + 8 = 22 (salah). Jangan lupa: (−8) ÷ (−2) = +4.' },
+  { id: 'L3-02', level: 3, tp: 'TP3', kognitif: 'C5', tipe: 'pg', indikator: 'Mengevaluasi persamaan tanpa penyelesaian', soal: 'Persamaan 2x + 5 = 2x + 9 tidak mempunyai penyelesaian. Alasan yang paling tepat adalah …',
+    opsi: ['Setelah kedua ruas dikurangi 2x diperoleh 5 = 9, yang tidak pernah benar', 'Nilai x harus negatif', 'Koefisien x di kedua ruas berbeda', 'Persamaan itu tidak linear'], kunci: 0,
+    pembahasan: 'Kardus x di kedua ruas saling meniadakan sehingga tersisa 5 = 9. Karena itu syarat a ≠ c pada ax + b = cx + d penting.' }
+];
+/* =====================  AKHIR AREA EDIT  ============================= */
+
+/* ===================== MESIN (tidak perlu diubah) ===================== */
+/*PURE-START*/
+const R = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a, P = a => a[R(0, a.length - 1)];
+const acak = a => { const x = [...a]; for (let i = x.length - 1; i > 0; i--) { const j = R(0, i); [x[i], x[j]] = [x[j], x[i]]; } return x; };
+const fmt = n => String(Number(n.toFixed(2))).replace('.', ',');
+function buatSoal(it) {
+  const m = { id: it.id, level: it.level, kognitif: it.kognitif, tp: it.tp, indikator: it.indikator };
+  if (it.tipe === 'gen') {
+    const g = it.gen(), pakai = new Set([g.jawab]), sl = [];
+    g.salah.forEach(([n]) => { if (Number.isInteger(n) && n > 0 && !pakai.has(n) && sl.length < 3) { pakai.add(n); sl.push(n); } });
+    for (let k = 1; sl.length < 3 && k < 60; k++) [g.jawab + k, g.jawab - k].forEach(n => { if (sl.length < 3 && n > 0 && !pakai.has(n)) { pakai.add(n); sl.push(n); } });
+    const o = acak([g.jawab, ...sl]);
+    return { ...m, tipe: 'pg', soal: g.soal, opsi: o.map(n => `${n} ${g.satuan || ''}`.trim()), kunci: o.indexOf(g.jawab), pembahasan: g.langkah.join('<br>'), mentah: g };
+  }
+  if (it.tipe === 'bs') return { ...m, tipe: 'bs', soal: it.soal, opsi: ['Benar', 'Salah'], kunci: it.kunci ? 0 : 1, pembahasan: it.pembahasan || '' };
+  const u = acak(it.opsi.map((_, i) => i));
+  return { ...m, tipe: 'pg', soal: it.soal, opsi: u.map(i => it.opsi[i]), kunci: u.indexOf(it.kunci), pembahasan: it.pembahasan || '' };
+}
+function paket(jml) {
+  const out = [];
+  [1, 2, 3].forEach(l => {
+    const n = jml[l] || 0, pool = BANK.filter(b => b.level === l), gen = pool.filter(b => b.tipe === 'gen'), h = [];
+    acak(pool).forEach(b => { if (h.length < n) h.push(buatSoal(b)); });
+    for (let i = 0; h.length < n && gen.length; i++) h.push(buatSoal(gen[i % gen.length]));
+    out.push(...acak(h));
+  });
+  return out;
+}
+/*PURE-END*/
+
+const $ = (q, e = document) => e.querySelector(q), $$ = (q, e = document) => [...e.querySelectorAll(q)];
+const polos = h => { const d = document.createElement('div'); d.innerHTML = String(h).replace(/<br\s*\/?>/gi, '\n'); return d.textContent.trim(); };
+const HURUF = 'ABCDEFG', TIM = new Set();
+const S = { xp: 0, streak: 0, badges: [], skor: {}, rating: {}, salah: [], aktif: 0 };
+const say = m => { $('#live').textContent = m; };
+function toast(m) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = m; document.body.append(t); setTimeout(() => t.remove(), 2600); }
+function hud() { $('#xp').textContent = S.xp; $('#str').textContent = S.streak; }
+function poin(id, judul, ok) {
+  const k = S.skor[id] || (S.skor[id] = { judul, benar: 0, total: 0 }); k.total++;
+  if (ok) { k.benar++; S.xp += 10 + Math.min(S.streak, 5) * 2; S.streak++; } else S.streak = 0;
+  [[S.streak >= 3, '🔥 3 benar beruntun'], [S.streak >= 5, '⚡ 5 benar beruntun'], [S.xp >= 100, '🏆 100 XP']].forEach(([c, t]) => { if (c && !S.badges.includes(t)) { S.badges.push(t); toast('Lencana baru: ' + t); say('Lencana baru: ' + t); } });
+  hud();
+}
+function umpan(el, t, judul, pesan) { el.className = 'umpan ' + (t === true ? 'ok' : t === false ? 'no' : ''); el.innerHTML = `<b>${judul}</b> ${pesan || ''}`; el.hidden = false; }
+const esc = t => { const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; };
+function catatSalah(sumber, soal, jawab, benar, alasan) {          // bahan slide Tinjau kesalahan
+  if (S.salah.length >= 40 || S.salah.some(x => x.soal === soal && String(x.jawab) === String(jawab))) return;
+  S.salah.push({ sumber, soal, jawab, benar, alasan });
+}
+const kpl = s =>  `<div><p class="eb">${s.label || ''}</p><h2>${s.judul}</h2></div>`;
+const tombol = (h, c = 'opsi') => { const b = document.createElement('button'); b.type = 'button'; b.className = c; b.innerHTML = `<span>${h}</span>`; return b; };
+
+function pilihan(w, q, cb) {
+  w.innerHTML = `<div class="opsis">${q.opsi.map((o, i) => `<button type="button" class="opsi" data-i="${i}"${i === q.kunci ? ' data-benar' : ''}><b class="hrf">${q.tipe === 'bs' ? o[0] : HURUF[i]}</b><span>${o}</span></button>`).join('')}</div><div class="umpan" hidden aria-live="polite"></div>`;
+  const bt = $$('.opsi', w), u = $('.umpan', w);
+  bt.forEach(b => b.onclick = () => {
+    const ok = +b.dataset.i === q.kunci; bt.forEach(t => t.disabled = true); bt[q.kunci].classList.add('benar'); if (!ok) b.classList.add('salah');
+    umpan(u, ok, ok ? 'Benar.' : 'Belum tepat.', (ok ? '' : `Jawaban: <b>${q.tipe === 'bs' ? q.opsi[q.kunci] : HURUF[q.kunci] + '. ' + q.opsi[q.kunci]}</b>. `) + (q.pembahasan || '')); if (cb) cb(ok, +b.dataset.i);
+  });
+}
+function timer(el, total) {
+  const g = $('.ring', el), b = $('[data-t=mulai]', el), u = $('[data-t=ulang]', el); let sisa = total, id = null;
+  const tampil = () => { g.textContent = String(Math.floor(sisa / 60)).padStart(2, '0') + ':' + String(sisa % 60).padStart(2, '0'); g.classList.toggle('habis', sisa === 0); };
+  const stop = () => { clearInterval(id); TIM.delete(id); id = null; };
+  b.onclick = () => { if (id) { stop(); b.textContent = 'Lanjutkan'; return; } if (!sisa) return; b.textContent = 'Jeda';
+    id = setInterval(() => { sisa--; tampil(); if (sisa <= 0) { stop(); b.textContent = 'Waktu habis'; say('Waktu habis. Bandingkan idemu dengan teman sebelah.'); } }, 1000); TIM.add(id); };
+  u.onclick = () => { stop(); sisa = total; b.textContent = 'Mulai'; tampil(); }; tampil();
+}
+const TIMER_HTML = '<div class="aksi"><span class="ring" role="timer"></span><button class="btn" data-t="mulai">Mulai</button><button class="btn o" data-t="ulang">Ulang</button></div>';
+function bukaBertahap(root, item, btnMaju, btnUlang, label, awal = 0) {
+  let k = awal; const it = $$(item, root);
+  const g = () => { it.forEach((x, i) => x.hidden = i >= k); btnMaju.disabled = k >= it.length; btnMaju.textContent = k >= it.length ? 'Semua sudah tampil' : label; }; 
+  btnMaju.onclick = () => { if (k < it.length) { k++; g(); } }; if (btnUlang) btnUlang.onclick = () => { k = awal; g(); }; g();
+}
+
+const RENDER = {
+  judul(s, el) {
+    el.innerHTML = `<p class="eb">${CONFIG.mapel} · Kelas ${CONFIG.kelas} · Fase ${CONFIG.fase}</p><h1>${s.judul}</h1><p class="lead">${s.sub || ''}</p>
+      <div class="aksi"><button class="btn" data-go="1">Mulai belajar →</button><span class="soft">Pakai tombol ← → atau geser/ketuk.</span></div><p class="soft"><b>${CONFIG.guru}</b> · ${CONFIG.sekolah}</p><p class="soft">Alokasi waktu: ${CONFIG.jp} JP x ${CONFIG.menitJP} menit = ${TOTAL_MENIT} menit. Tekan Mulai jam (atau tombol J) saat pelajaran dimulai.</p>`;
+    $('[data-go]', el).onclick = () => go(1);
+  },
+  materi(s, el) {
+    el.innerHTML = kpl(s) + `<ol class="kol">${s.poin.map((p, i) => `<li class="kartu"><b style="color:var(--acc)">${s.penanda === 'TP' ? 'TP' + (i + 1) : '•'}</b> ${p}</li>`).join('')}</ol>`;
+  },
+  pemantik(s, el) {
+    el.innerHTML = kpl(s) + `<div class="grid2"><div style="display:grid;gap:.8em"><p class="lead">${s.soal}</p>${TIMER_HTML}
+      ${s.petunjuk.map(p => `<div class="kartu pt" hidden><b>Petunjuk:</b> ${p}</div>`).join('')}<div class="aksi"><button class="btn o" data-m>Tampilkan petunjuk</button><button class="btn o" data-u>↺ Sembunyikan</button></div></div><div style="text-align:center">${s.gambar}</div></div>`;
+    timer(el, s.detik || 30); bukaBertahap(el, '.pt', $('[data-m]', el), $('[data-u]', el), 'Tampilkan petunjuk');
+  },
+  simulasi(s, el) {
+    const v = {}, rows = [], MAXB = 8;
+    el.innerHTML = kpl(s) + `<p class="lead">${s.soal}</p><div class="grid2"><div class="kartu" style="text-align:center"><div class="svg"></div></div><div style="display:grid;gap:.7em">
+      <div class="kartu" style="display:grid;gap:.4em">${s.slider.map(x => `<label for="sl-${x.k}"><b>${x.label}:</b> <output id="o-${x.k}">${x.val}</output></label><input type="range" id="sl-${x.k}" min="${x.min}" max="${x.max}" step="1" value="${x.val}">`).join('')}<dl class="hasil" style="display:grid;grid-template-columns:1fr auto;gap:.2em 1em;margin:.4em 0 0"></dl></div>
+      <div class="aksi"><button class="btn" data-c>Catat ke tabel</button><button class="btn o" data-h>↺ Hapus tabel</button><button class="btn o" data-t disabled>Rumuskan temuan</button></div><p class="soft st" aria-live="polite"></p>
+      <div class="kartu tb" hidden style="overflow-x:auto"><table><thead><tr>${s.kolom.map(c => `<th scope="col">${c}</th>`).join('')}</tr></thead><tbody></tbody></table></div><div class="umpan ok tm" hidden><b>Temuanmu:</b> ${s.temuan}</div></div></div>`;
+    const draw = () => { s.slider.forEach(x => { v[x.k] = +$('#sl-' + x.k, el).value; $('#o-' + x.k, el).textContent = v[x.k]; }); $('.svg', el).innerHTML = s.gambar(v);
+      $('.hasil', el).innerHTML = s.hasil(v).map(([a, b]) => `<dt>${a}</dt><dd style="margin:0;text-align:right;font-weight:700">${b}</dd>`).join(''); };
+    const log = () => { $('tbody', el).innerHTML = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join(''); $('.tb', el).hidden = !rows.length; $('[data-t]', el).disabled = rows.length < s.minCatat;
+      $('.st', el).textContent = rows.length < s.minCatat ? `Data tercatat: ${rows.length}. Catat minimal ${s.minCatat} data berbeda untuk membuka tombol Rumuskan temuan.` : `Data tercatat: ${rows.length}. Bandingkan kolom terakhir dengan hasil di samping gambar. Apa yang kamu perhatikan?`; };
+    $$('input', el).forEach(i => i.oninput = draw);
+    $('[data-c]', el).onclick = () => { const r = s.baris(v), key = r.join('|');
+      if (rows.some(x => x.join('|') === key)) { $('.st', el).textContent = 'Data itu sudah tercatat. Geser ke ukuran lain.'; return; }
+      if (rows.length >= MAXB) { $('.st', el).textContent = `Tabel penuh (${MAXB} data). Tekan Hapus tabel untuk mulai lagi.`; return; } rows.push(r); log(); };
+    $('[data-h]', el).onclick = () => { rows.length = 0; $('.tm', el).hidden = true; log(); };
+    $('[data-t]', el).onclick = () => { $('.tm', el).hidden = false; poin(s.id, s.judul, true); };
+    draw(); log();
+  },
+  flipcard(s, el) {
+    el.innerHTML = kpl(s) + `<p class="soft">Ketuk kartu untuk melihat artinya.</p><div class="grid2">${s.kartu.map(k => `<button class="flip" aria-pressed="false"><small class="eb">Istilah</small><b>${k.d}</b><span hidden>${k.b}</span></button>`).join('')}</div>`;
+    $$('.flip', el).forEach(b => b.onclick = () => { const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); $('span', b).hidden = !on; });
+  },
+  konsep(s, el) {
+    el.innerHTML = kpl(s) + `<div role="tablist" class="chips" aria-label="Rumusan konsep">${s.tab.map((t, i) => `<button class="chip" role="tab" id="tb${i}" aria-selected="${i === 0}" tabindex="${i ? -1 : 0}">${t.n}</button>`).join('')}</div>${s.tab.map((t, i) => `<div class="kartu" role="tabpanel" aria-labelledby="tb${i}" ${i ? 'hidden' : ''}>${t.h}</div>`).join('')}`;
+    const tb = $$('[role=tab]', el), pn = $$('[role=tabpanel]', el);
+    const pilih = (i, f) => { tb.forEach((t, j) => { t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1; pn[j].hidden = j !== i; }); if (f) tb[i].focus(); };
+    tb.forEach((t, i) => { t.onclick = () => pilih(i); t.onkeydown = e => { const m = { ArrowRight: (i + 1) % tb.length, ArrowLeft: (i + tb.length - 1) % tb.length }; if (e.key in m) { e.preventDefault(); pilih(m[e.key], true); } }; });
+  },
+  langkah(s, el) {
+    el.innerHTML = kpl(s) + `<p class="lead">${s.soal}</p><ol class="kol">${s.langkah.map((l, i) => `<li class="kartu lk" style="display:flex;gap:.8em"><b class="hrf">${i + 1}</b><div><b>${l[0]}</b><br><span class="soft">${l[1]}</span></div></li>`).join('')}</ol>
+      <div class="aksi"><button class="btn" data-m></button><button class="btn o" data-u>↺ Sembunyikan</button></div>`;
+    bukaBertahap(el, '.lk', $('[data-m]', el), $('[data-u]', el), 'Buka langkah berikutnya');
+  },
+  urutkan(s, el) {
+    const n = s.langkah.length; let pool, pl, sudah = false;
+    el.innerHTML = kpl(s) + `<p class="lead">${s.soal}</p><div class="grid2"><div><h3>Pilih langkah (ketuk)</h3><div class="kol pool"></div></div><div><h3>Urutanmu (ketuk untuk mengembalikan)</h3><ol class="kol jaw"></ol></div></div>
+      <div class="aksi"><button class="btn" data-c>Periksa urutan</button><button class="btn o" data-r>↺ Ulangi</button></div><div class="umpan" hidden aria-live="polite"></div>`;
+    const P_ = $('.pool', el), J = $('.jaw', el), U = $('.umpan', el);
+    const gb = tanda => {
+      P_.innerHTML = ''; J.innerHTML = '';
+      pool.forEach(o => { const b = tombol(o.t); b.onclick = () => { pool = pool.filter(x => x !== o); pl.push(o); U.hidden = true; gb(); }; P_.append(b); });
+      pl.forEach((o, k) => { const li = document.createElement('li'), b = tombol(`<b>${k + 1}.</b> ${o.t}`); if (tanda) b.classList.add(o.i === k ? 'benar' : 'salah'); b.onclick = () => { pl = pl.filter(x => x !== o); pool.push(o); U.hidden = true; gb(); }; li.append(b); J.append(li); });
+      if (!pl.length) J.innerHTML = '<li class="soft">Belum ada langkah. Ketuk langkah di kolom kiri.</li>';
+    };
+    const mulai = () => { pool = acak([...s.langkah.map((t, i) => ({ t, i })), ...(s.pengecoh ? [{ t: s.pengecoh, i: -1 }] : [])]); pl = []; U.hidden = true; gb(); };
+    $('[data-c]', el).onclick = () => {
+      if (pl.length < n) { umpan(U, 'info', 'Belum lengkap.', `Urutanmu baru ${pl.length} langkah. Pilih ${n} langkah yang kamu anggap benar.`); return; }
+      gb(true); const tepat = pl.filter((o, k) => o.i === k).length, ok = tepat === n && !pl.some(o => o.i < 0);
+      if (!sudah) { sudah = true; poin(s.id, s.judul, ok); }
+      if (pl.some(o => o.i < 0)) umpan(U, false, 'Ada langkah pengecoh.', s.pesanPengecoh || '');
+      else umpan(U, ok, ok ? 'Urutan tepat.' : 'Belum tepat.', ok ? (s.pola || 'Urutan sudah sesuai alur penyelesaian.') : `${tepat} dari ${n} langkah sudah di posisi yang benar. Perbaiki yang bertanda merah.`);
+    };
+    $('[data-r]', el).onclick = mulai; mulai();
+  },
+  'benar-salah'(s, el) {
+    el.innerHTML = kpl(s) + `<div class="kol">${s.pernyataan.map((p, i) => `<div class="kartu" data-i="${i}"><p><b>${i + 1}.</b> ${p.t}</p><div class="aksi" style="margin:.5em 0"><button class="btn o" data-j="1" ${p.j ? 'data-benar' : ''}>Benar</button><button class="btn o" data-j="0" ${p.j ? '' : 'data-benar'}>Salah</button></div><div class="umpan" hidden aria-live="polite"></div></div>`).join('')}</div>`;
+    $$('[data-i]', el).forEach(r => { const p = s.pernyataan[+r.dataset.i], bt = $$('button', r);
+      bt.forEach(b => b.onclick = () => { const ok = (b.dataset.j === '1') === p.j; bt.forEach(x => x.disabled = true); b.style.background = ok ? 'var(--okw)' : 'var(--badw)'; b.style.borderColor = ok ? 'var(--ok)' : 'var(--bad)'; b.style.color = 'var(--ink)'; b.textContent += ok ? ' ✓' : ' ✗';
+        umpan($('.umpan', r), ok, ok ? 'Tepat.' : 'Belum tepat.', p.a); if (!ok) catatSalah('Benar atau salah', p.t, b.dataset.j === '1' ? 'Benar' : 'Salah', p.j ? 'Benar' : 'Salah', p.a); poin(s.id, s.judul, ok); }); });
+  },
+  pasangkan(s, el) {
+    const kn = acak(s.pasangan.map((p, i) => ({ t: p.r, i }))), gagal = new Set(); let pil = null, cocok = 0;
+    el.innerHTML = kpl(s) + `<p class="soft">${s.instruksi || ''}</p><div class="pasang"><div class="kol" data-k>${s.pasangan.map((p, i) => `<button class="opsi" data-i="${i}"><span>${p.k}</span></button>`).join('')}</div><div class="kol" data-r>${kn.map(k => `<button class="opsi" data-i="${k.i}"><span>${k.t}</span></button>`).join('')}</div></div><p class="umpan" hidden aria-live="polite"></p>`;
+    const U = $('.umpan', el), L = $$('[data-k] .opsi', el), Rr = $$('[data-r] .opsi', el);
+    L.forEach(b => b.onclick = () => { L.forEach(x => x.classList.remove('pilih')); b.classList.add('pilih'); pil = b; umpan(U, 'info', 'Sekarang pilih pasangannya di kolom kanan.'); });
+    Rr.forEach(b => b.onclick = () => {
+      if (!pil) { umpan(U, 'info', 'Pilih dulu satu item di kolom kiri.'); return; } const i = +pil.dataset.i;
+      if (+b.dataset.i === i) { [pil, b].forEach(x => { x.classList.remove('pilih'); x.classList.add('benar'); x.disabled = true; }); poin(s.id, s.judul, !gagal.has(i)); pil = null; cocok++;
+        umpan(U, true, cocok === s.pasangan.length ? 'Selesai!' : 'Cocok.', cocok === s.pasangan.length ? 'Semua pasangan sudah benar.' : 'Lanjutkan.'); }
+      else { gagal.add(i); umpan(U, false, 'Belum cocok.', 'Hitung lagi, lalu coba pasangan lain.'); }
+    });
+  },
+  kuis(s, el) {
+    let d = paket(s.jumlah), k = 0, benar = 0;
+    el.innerHTML = kpl(s) + `<div class="kartu" style="display:grid;gap:.8em"><p class="soft hs"></p><div class="lead sq"></div><div class="wo"></div><div class="aksi"><button class="btn" data-n hidden></button></div></div>`;
+    const hs = $('.hs', el), sq = $('.sq', el), wo = $('.wo', el), nx = $('[data-n]', el);
+    const tampil = () => { const q = d[k]; hs.textContent = `Soal ${k + 1} dari ${d.length} · Level ${q.level}`; sq.innerHTML = q.soal; nx.hidden = true;
+      pilihan(wo, q, (ok, i) => { if (ok) benar++; else catatSalah('Kuis', q.soal, q.opsi[i], q.opsi[q.kunci], q.pembahasan); poin(s.id, s.judul, ok); nx.textContent = k < d.length - 1 ? 'Soal berikutnya' : 'Lihat skor'; nx.hidden = false; }); };
+    nx.onclick = () => { if (nx.dataset.selesai) { delete nx.dataset.selesai; d = paket(s.jumlah); k = 0; benar = 0; tampil(); return; }
+      if (k < d.length - 1) { k++; tampil(); return; } nx.dataset.selesai = 1; hs.textContent = 'Selesai'; sq.innerHTML = `Skor kuis: <b>${benar}</b> dari ${d.length}.`; wo.innerHTML = ''; nx.textContent = 'Ulangi dengan soal baru'; };
+    tampil();
+  },
+  latihan(s, el) {
+    let lv = 1, q, hint = 0, coba = 0, selesai = false, dicatat = false;
+    el.innerHTML = kpl(s) + `<div class="chips" role="group" aria-label="Level soal">${[1, 2, 3].map(l => `<button class="chip" data-l="${l}" aria-pressed="${l === 1}">Level ${l}: ${s.levelNama[l - 1]}</button>`).join('')}</div>
+      <div class="kartu" style="display:grid;gap:.7em"><p class="lead sq"></p><form class="aksi" novalidate><label>Jawabanmu <span class="sat"></span> <input type="text" inputmode="decimal" autocomplete="off" style="width:7em"></label><button class="btn">Periksa</button></form>
+      <div class="aksi"><button type="button" class="btn o" data-p>Butuh petunjuk?</button><button type="button" class="btn o" data-b>Lihat pembahasan</button><button type="button" class="btn o" data-n>Soal baru →</button></div>
+      <div class="umpan" hidden aria-live="polite"></div><ol class="kartu bh" hidden style="margin:0;padding-left:2em"></ol></div><p class="soft st"></p>`;
+    const sq = $('.sq', el), inp = $('input', el), U = $('.umpan', el), bh = $('.bh', el), bp = $('[data-p]', el);
+    const catat = ok => { if (dicatat) return; dicatat = true; poin(s.id, s.judul, ok); $('.st', el).textContent = `Soal dikerjakan: ${S.skor[s.id].total} · benar di percobaan pertama tanpa petunjuk: ${S.skor[s.id].benar}`; };
+    const kunci = () => { selesai = true; inp.disabled = true; $('form button', el).disabled = true; bp.disabled = true; };
+    const baru = () => { const pool = BANK.filter(b => b.level === lv && b.tipe === 'gen'); q = buatSoal(P(pool)).mentah; hint = 0; coba = 0; selesai = false; dicatat = false;
+      sq.innerHTML = q.soal; $('.sat', el).textContent = (q.label || q.satuan) ? '(' + (q.label || q.satuan) + ')' : ''; inp.value = ''; inp.disabled = false; $('form button', el).disabled = false; bp.disabled = false; bp.textContent = 'Butuh petunjuk?'; U.hidden = true; bh.hidden = true; bh.innerHTML = ''; };
+    const bahas = () => { bh.innerHTML = q.langkah.map(l => `<li>${l}</li>`).join(''); bh.hidden = false; };
+    $('form', el).onsubmit = e => { e.preventDefault(); if (selesai) return; const raw = inp.value.trim().replace(',', '.');
+      if (!/^\d+(\.\d+)?$/.test(raw)) { umpan(U, 'info', 'Jawaban belum terbaca.', 'Tulis angka saja, misalnya 13.'); return; } const x = Number(raw); coba++;
+      if (Math.abs(x - q.jawab) < 1e-9) { catat(coba === 1 && hint === 0); kunci(); bahas(); umpan(U, true, coba === 1 ? 'Benar.' : 'Benar, kamu berhasil memperbaikinya.', 'Cocokkan langkahmu dengan pembahasan di bawah.'); return; }
+      const d = q.salah.find(z => Math.abs(z[0] - x) < 1e-9); catatSalah('Latihan level ' + lv, q.soal, x, q.jawab + (q.satuan ? ' ' + q.satuan : ''), (d ? d[1] : 'Belum ada pola kesalahan yang dikenali. Cocokkan dengan pembahasan.') + '<br><small>Pembahasan: ' + q.langkah.join(' → ') + '</small>'); umpan(U, false, 'Belum tepat.', d ? d[1] : 'Periksa lagi langkahmu. Butuh petunjuk? Tekan tombol petunjuk.'); };
+    bp.onclick = () => { if (selesai) return; hint = Math.min(hint + 1, q.petunjuk.length); umpan(U, 'info', `Petunjuk ${hint} dari ${q.petunjuk.length}.`, q.petunjuk[hint - 1]); bp.disabled = hint >= q.petunjuk.length; };
+    $('[data-b]', el).onclick = () => { catat(false); bahas(); if (!selesai) { kunci(); umpan(U, 'info', 'Pembahasan dibuka.', 'Pelajari langkahnya, lalu coba soal baru dengan angka berbeda.'); } };
+    $('[data-n]', el).onclick = baru;
+    $$('[data-l]', el).forEach(b => b.onclick = () => { lv = +b.dataset.l; $$('[data-l]', el).forEach(x => x.setAttribute('aria-pressed', x === b)); baru(); });
+    baru();
+  },
+  diskusi(s, el) {
+    el.innerHTML = kpl(s) + `<div class="grid2"><div style="display:grid;gap:.7em"><p class="lead">${s.soal}</p><ol>${s.langkah.map(l => `<li>${l}</li>`).join('')}</ol><button class="btn o" data-j>Buka jawaban</button><div class="umpan ok" hidden><b>Kesimpulan:</b> ${s.jawab}</div></div>
+      <div class="kartu" style="text-align:center"><p class="eb">Waktu diskusi</p>${TIMER_HTML}</div></div>`;
+    timer(el, s.durasi || 60); $('[data-j]', el).onclick = () => { $('.umpan', el).hidden = false; $('[data-j]', el).hidden = true; };
+  },
+  refleksi(s, el) {
+    el.innerHTML = kpl(s) + `<div class="kol">${s.tujuan.map((t, i) => `<div class="kartu" data-i="${i}"><p><b>${i + 1}.</b> ${t.t}</p><div class="rb" role="radiogroup" aria-label="Penilaian tujuan ${i + 1}" style="margin-top:.5em">${['Belum paham', 'Hampir paham', 'Sudah paham'].map((n, j) => `<button class="chip" role="radio" aria-checked="false" data-v="${j + 1}">${n}</button>`).join('')}</div></div>`).join('')}</div>
+      <div class="kol hs" aria-live="polite"></div><details class="kartu"><summary><b>Tiket keluar:</b> ${s.tiket}</summary><p style="margin-top:.5em">${s.contoh}</p></details>`;
+    const hasil = () => { const w = $('.hs', el); w.innerHTML = '';
+      s.tujuan.forEach((t, i) => { const r = S.rating[i]; if (!r || r === 3) return; const d = document.createElement('div'); d.className = 'umpan'; d.innerHTML = `Tujuan ${i + 1} masih ${r === 1 ? 'belum paham' : 'hampir paham'}. `;
+        const b = tombol('Ulangi slide terkait', 'btn s'); b.onclick = () => go(SLIDES.findIndex(x => x.id === t.ulang)); d.append(b); w.append(d); });
+      if (s.tujuan.every((t, i) => S.rating[i] === 3)) umpan(w.appendChild(document.createElement('div')), true, 'Mantap.', 'Coba jelaskan ketiga tujuan itu ke temanmu untuk memastikan.'); };
+    $$('[data-i]', el).forEach(r => $$('[data-v]', r).forEach(b => b.onclick = () => { S.rating[+r.dataset.i] = +b.dataset.v; $$('[data-v]', r).forEach(x => x.setAttribute('aria-checked', x === b)); hasil(); }));
+  },
+  tinjau(s, el) {
+    el.innerHTML = kpl(s) + '<p class="soft">Kesalahan adalah bahan belajar. Baca penyebabnya, lalu kerjakan ulang soal serupa di slide Latihan tanpa melihat pembahasan.</p><div class="kol dl" aria-live="polite"></div>';
+    const g = () => {
+      const w = $('.dl', el); w.innerHTML = '';
+      if (!S.salah.length) { umpan(w.appendChild(document.createElement('div')), true, 'Belum ada kesalahan tercatat.', 'Jika kamu sudah mengerjakan kuis dan latihan, itu kabar baik. Jika belum, kerjakan dulu, lalu kembali ke sini.'); return; }
+      S.salah.forEach((x, n) => {
+        const d = document.createElement('div'); d.className = 'kartu';
+        d.innerHTML = `<p class="eb">${n + 1} · ${x.sumber}</p><div>${x.soal}</div><p><b>Jawabanmu:</b> ${esc(x.jawab)} &nbsp;·&nbsp; <b>Seharusnya:</b> ${esc(x.benar)}</p><div class="umpan no"><b>Penyebab dan perbaikan:</b> ${x.alasan}</div>`;
+        w.append(d);
+      });
+    };
+    g(); return { onShow: g };
+  },
+  rekap(s, el) {
+    el.innerHTML = kpl(s) + '<div class="rk grid2"></div><div class="aksi"><button class="btn o" data-r>Mulai ulang semua aktivitas</button></div>';
+    const g = () => { const it = Object.values(S.skor), B = it.reduce((a, x) => a + x.benar, 0), T = it.reduce((a, x) => a + x.total, 0), tingkat = S.xp >= 200 ? 'Ahli' : S.xp >= 80 ? 'Pemecah Masalah' : S.xp >= 20 ? 'Penjelajah' : 'Pemula';
+      $('.rk', el).innerHTML = `<div class="kartu"><p class="big">${T ? Math.round(B / T * 100) : 0}<small>%</small></p><p class="soft">${B} dari ${T} jawaban benar pada percobaan pertama</p><p style="margin-top:.6em">⭐ <b>${S.xp} XP</b> · Peringkat: <b>${tingkat}</b></p><p>${S.badges.length ? S.badges.join(' · ') : 'Belum ada lencana. Kerjakan kuis dan latihan untuk mengumpulkannya.'}</p></div>
+        <div class="kartu"><h3>Per aktivitas</h3><table>${it.map(x => `<tr><td>${x.judul}</td><td>${x.benar}/${x.total}</td></tr>`).join('') || '<tr><td class="soft">Belum ada aktivitas.</td></tr>'}</table></div>`; };
+    let siap = false; $('[data-r]', el).onclick = e => { if (!siap) { siap = true; e.target.textContent = 'Ketuk sekali lagi untuk menghapus'; setTimeout(() => { siap = false; e.target.textContent = 'Mulai ulang semua aktivitas'; }, 3500); return; } resetSemua(); };
+    g(); return { onShow: g };
+  }
+};
+
+/* ---------- Jam pelajaran: hitung mundur total alokasi, dibandingkan dengan rencana tiap slide ---------- */
+const TOTAL_MENIT = CONFIG.jp * CONFIG.menitJP, TOTAL_DETIK = TOTAL_MENIT * 60;
+const RENCANA = (() => { let t = 0; return SLIDES.map(s => { const a = t; t += (s.waktu || 0) * 60; return [a, t]; }); })();
+const JUMLAH_DETIK = RENCANA[RENCANA.length - 1][1];
+const JAM = { dasar: 0, mulai: null, id: null, tanda: new Set() };          // dasar: ms terkumpul saat dijeda; mulai: Date.now() saat berjalan
+const mmss = d => { d = Math.max(0, Math.ceil(d)); return String(Math.floor(d / 60)).padStart(2, '0') + ':' + String(d % 60).padStart(2, '0'); };
+const terpakai = () => (JAM.dasar + (JAM.mulai !== null ? Date.now() - JAM.mulai : 0)) / 1000;
+function tampilJam() {
+  const e = terpakai(), sisa = TOTAL_DETIK - e, ada = JAM.mulai !== null || JAM.dasar > 0, [a, b] = RENCANA[S.aktif], w = $('#jam-sisa'), c = $('#jam-jadwal');
+  w.textContent = mmss(sisa); w.classList.toggle('habis', sisa <= 0);
+  $('#mk').style.left = Math.min(100, e / TOTAL_DETIK * 100) + '%'; $('#mk').hidden = !ada;
+  let t = 'Jam belum dimulai', k = '';
+  if (ada && e < a) t = 'Lebih cepat ' + mmss(a - e) + ' dari rencana';
+  else if (ada && e > b) { t = '⚠ Terlambat ' + mmss(e - b); k = ' tl'; }
+  else if (ada) { t = '✓ Sesuai jadwal · sisa slide ' + mmss(b - e); k = ' ok'; }
+  c.textContent = t; c.className = 'cw' + k;
+  if (JAM.mulai !== null) [[600, 'Sisa 10 menit.'], [300, 'Sisa 5 menit.'], [0, 'Waktu pelajaran habis.']].forEach(([m, pesan]) => { if (sisa <= m && !JAM.tanda.has(m)) { JAM.tanda.add(m); toast(pesan); say(pesan); } });
+}
+function infoSlide(i) { const s = SLIDES[i], [a, b] = RENCANA[i]; $('#jam-slide').textContent = `Slide ini: ${s.waktu || 0} mnt (menit ${a / 60} sampai ${b / 60})`; tampilJam(); }
+function infoKet() { const sel = JUMLAH_DETIK - TOTAL_DETIK; $('#jam-ket').textContent = `dari ${TOTAL_MENIT} menit (${CONFIG.jp} JP)` + (sel ? ` · ⚠ jumlah waktu slide ${JUMLAH_DETIK / 60} menit, cek Panel guru` : ''); }
+function labelJam() { const jalan = JAM.mulai !== null; $('#b-jam').textContent = jalan ? 'Jeda jam' : (JAM.dasar > 0 ? 'Lanjut jam' : 'Mulai jam'); }
+function jamToggle() {
+  if (JAM.mulai !== null) { JAM.dasar += Date.now() - JAM.mulai; JAM.mulai = null; clearInterval(JAM.id); JAM.id = null; }
+  else { JAM.mulai = Date.now(); JAM.id = setInterval(tampilJam, 500); }
+  labelJam(); tampilJam();
+}
+function jamReset() { clearInterval(JAM.id); JAM.id = null; JAM.dasar = 0; JAM.mulai = null; JAM.tanda.clear(); labelJam(); tampilJam(); }
+function isiRencana() {
+  const sel = JUMLAH_DETIK - TOTAL_DETIK;
+  $('#wkt-ket').textContent = sel === 0 ? `Jumlah waktu slide ${JUMLAH_DETIK / 60} menit, tepat sama dengan ${CONFIG.jp} JP x ${CONFIG.menitJP} menit = ${TOTAL_MENIT} menit.`
+    : `⚠ Jumlah waktu slide ${JUMLAH_DETIK / 60} menit, ${sel > 0 ? 'lebih' : 'kurang'} ${Math.abs(sel) / 60} menit dari ${TOTAL_MENIT} menit. Ubah nilai waktu pada SLIDES.`;
+  $('#wkt-tab').innerHTML = '<thead><tr><th scope="col">No</th><th scope="col">Tahap</th><th scope="col">Slide</th><th scope="col">Menit</th><th scope="col">Rencana (menit ke-)</th></tr></thead><tbody>'
+    + SLIDES.map((s, i) => `<tr${i === S.aktif ? ' aria-current="true"' : ''}><td>${i + 1}</td><td>${esc(s.label || s.tipe)}</td><td>${esc(polos(s.judul || ''))}</td><td>${s.waktu || 0}</td><td>${RENCANA[i][0] / 60} sampai ${RENCANA[i][1] / 60}</td></tr>`).join('') + '</tbody>';
+}
+$('#b-jam').onclick = jamToggle;
+(() => { let siap = false; const b = $('#b-jam-reset'); b.onclick = () => { if (!siap) { siap = true; b.textContent = 'Klik sekali lagi untuk mengatur ulang'; setTimeout(() => { siap = false; b.textContent = 'Atur ulang jam'; }, 3500); return; }
+  siap = false; b.textContent = 'Atur ulang jam'; jamReset(); $('#st-jam').textContent = 'Jam kembali ke ' + mmss(TOTAL_DETIK) + '.'; }; })();
+
+/* ---------- Navigasi ---------- */
+const stage = $('#stage'), ONSHOW = [];
+function renderSemua() {
+  TIM.forEach(clearInterval); TIM.clear(); stage.innerHTML = ''; ONSHOW.length = 0;
+  SLIDES.forEach((s, i) => { const el = document.createElement('section'); el.className = 'slide'; el.hidden = true; el.setAttribute('aria-label', `Slide ${i + 1}: ${polos(s.judul || '')}`);
+    stage.append(el); ONSHOW[i] = (RENDER[s.tipe] || RENDER.materi)(s, el) || {}; });
+}
+function resetSemua() { Object.assign(S, { xp: 0, streak: 0, badges: [], skor: {}, rating: {}, salah: [] }); hud(); renderSemua(); go(0); }
+function go(i) {
+  i = Math.max(0, Math.min(SLIDES.length - 1, i)); const els = $$('.slide', stage); els.forEach((e, j) => e.hidden = j !== i);
+  els[i].classList.remove('in'); void els[i].offsetWidth; els[i].classList.add('in'); stage.scrollTop = 0; S.aktif = i; if (ONSHOW[i].onShow) ONSHOW[i].onShow();
+  $('#cnt').textContent = `${i + 1} / ${SLIDES.length}`; $('#bar').style.width = Math.min(100, RENCANA[i][1] / TOTAL_DETIK * 100) + '%'; infoSlide(i); $('#pb').setAttribute('aria-valuenow', i + 1);
+  $('#b-prev').disabled = i === 0; $('#b-next').disabled = i === SLIDES.length - 1; say(`Slide ${i + 1} dari ${SLIDES.length}: ${polos(SLIDES[i].judul || '')}`);
+  try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) { /* pratinjau tersandbox: navigasi tetap jalan */ }
+}
+const tema = () => { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark'; };
+const penuh = () => { try { const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); if (p) p.catch(() => {}); } catch (e) {} };
+
+/* ---------- Dialog menu & panel guru ---------- */
+const dm = $('#dm'), dg = $('#dg');
+function bukaMenu() { const tot = SLIDES.reduce((a, s) => a + (s.waktu || 0), 0); $('#mt').textContent = tot ? `Alur ${tot} menit dari ${TOTAL_MENIT} menit (${CONFIG.jp} JP)` + (tot === TOTAL_MENIT ? '' : ' · ⚠ tidak sama') : '';
+  $('#mg').innerHTML = SLIDES.map((s, i) => `<button type="button" data-ke="${i}" ${i === S.aktif ? 'aria-current="true"' : ''}><small>${i + 1} · ${s.label || s.tipe}${s.waktu ? ' · ' + s.waktu + ' mnt (menit ' + RENCANA[i][0] / 60 + ' sampai ' + RENCANA[i][1] / 60 + ')' : ''}</small>${esc(polos(s.judul || ''))}</button>`).join(''); dm.showModal(); }
+function tabGuru(n) { $$('[data-tab]', dg).forEach(b => b.setAttribute('aria-selected', b.dataset.tab === n)); $$('[data-p]', dg).forEach(p => p.hidden = p.dataset.p !== n); }
+function bukaGuru(n = 'alat') { const s = SLIDES[S.aktif]; $('#cat-meta').textContent = `Slide ${S.aktif + 1} · ${s.label || s.tipe}${s.waktu ? ' · sekitar ' + s.waktu + ' menit' : ''}`; $('#cat-isi').textContent = s.catatan || 'Belum ada catatan untuk slide ini.';
+  const per = l => BANK.filter(b => b.level === l).length; $('#kisi').textContent = `Bank soal: Level 1 = ${per(1)} butir, Level 2 = ${per(2)}, Level 3 = ${per(3)}. Total ${BANK.length} butir (soal bertipe gen menghasilkan angka baru setiap kali).`; isiRencana(); tabGuru(n); if (!dg.open) dg.showModal(); }
+[dm, dg].forEach(d => d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-x]')) d.close(); }));
+$('#mg').onclick = e => { const b = e.target.closest('[data-ke]'); if (b) { dm.close(); go(+b.dataset.ke); } };
+$$('[data-tab]', dg).forEach(b => b.onclick = () => tabGuru(b.dataset.tab));
+$('#o-kunci').onchange = e => document.body.classList.toggle('kunci', e.target.checked);
+$('#o-jenjang').onchange = e => { document.documentElement.dataset.jenjang = e.target.value; };
+function acakSiswa() { const n = $('#nama').value.split('\n').map(x => x.trim()).filter(Boolean), o = $('#terpilih'); if (!n.length) { o.textContent = 'Isi daftar nama dulu.'; return; }
+  let k = 0; const id = setInterval(() => { o.textContent = P(n); if (++k > 10) { clearInterval(id); const p = P(n); o.textContent = p; say('Terpilih: ' + p); } }, 90); }
+$('#b-acak').onclick = acakSiswa;
+(() => { let siap = false; const b = $('#b-reset'); b.onclick = () => { if (!siap) { siap = true; b.textContent = 'Klik sekali lagi untuk menghapus'; setTimeout(() => { siap = false; b.textContent = 'Hapus semua poin siswa'; }, 3500); return; } siap = false; b.textContent = 'Hapus semua poin siswa'; resetSemua(); $('#st-reset').textContent = 'Semua poin sudah dihapus.'; }; })();
+
+/* Generator paket soal */
+let PAKET = [];
+$('#b-paket').onclick = () => { const jml = { 1: +$('#j1').value || 0, 2: +$('#j2').value || 0, 3: +$('#j3').value || 0 }; PAKET = paket(jml); const bahas = $('#o-bahas').checked;
+  $('#paket-out').innerHTML = PAKET.map(q => `<li><small class="soft">Level ${q.level} · ${q.kognitif} · ${q.tp} · ${q.id}</small><div>${q.soal}</div><ol style="list-style:upper-alpha">${q.opsi.map((o, i) => `<li class="${i === q.kunci ? 'k' : ''}">${o}${i === q.kunci ? ' ✓' : ''}</li>`).join('')}</ol>${bahas && q.pembahasan ? `<div class="soft">Pembahasan: ${q.pembahasan}</div>` : ''}</li>`).join('');
+  $('#st-paket').textContent = PAKET.length ? `${PAKET.length} soal dibuat.` : 'Isi jumlah soal minimal 1.'; $('#b-salin').disabled = !PAKET.length; $('#paket-teks').hidden = true; };
+$('#b-salin').onclick = () => { const bahas = $('#o-bahas').checked, L = [`PAKET SOAL: ${polos(CONFIG.judul)}`, `${CONFIG.mapel} · Kelas ${CONFIG.kelas} · Fase ${CONFIG.fase}`, ''];
+  PAKET.forEach((q, n) => { L.push(`${n + 1}. [Level ${q.level} · ${q.kognitif}] ${polos(q.soal)}`); q.opsi.forEach((o, i) => L.push(`   ${HURUF[i]}. ${polos(o)}`)); L.push(''); });
+  L.push('KUNCI JAWABAN'); PAKET.forEach((q, n) => L.push(`${n + 1}. ${HURUF[q.kunci]}${bahas && q.pembahasan ? ' | ' + polos(q.pembahasan) : ''}`));
+  const t = L.join('\n'), ta = $('#paket-teks'), st = $('#st-paket'), cad = () => { ta.value = t; ta.hidden = false; ta.focus(); ta.select(); st.textContent = 'Teks sudah dipilih. Tekan Ctrl+C untuk menyalin.'; };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => { st.textContent = 'Paket soal tersalin. Tempel ke Word atau Google Docs.'; }).catch(cad); else cad(); } catch (e) { cad(); } };
+
+/* ---------- Event global ---------- */
+$('#b-prev').onclick = () => go(S.aktif - 1); $('#b-next').onclick = () => go(S.aktif + 1);
+$('#b-menu').onclick = bukaMenu; $('#b-guru').onclick = () => bukaGuru(); $('#b-tema').onclick = tema; $('#b-penuh').onclick = penuh;
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented || $('dialog[open]')) return;
+  const t = e.target; if (t.closest('input, textarea, select') || t.closest('[role=tab]') && ['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const k = e.key;
+  if (k === 'ArrowRight' || k === 'PageDown') { e.preventDefault(); go(S.aktif + 1); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); go(S.aktif - 1); }
+  else if (k === ' ' && !t.closest('button, summary, a')) { e.preventDefault(); go(S.aktif + (e.shiftKey ? -1 : 1)); }
+  else if (k === 'Home') { e.preventDefault(); go(0); } else if (k === 'End') { e.preventDefault(); go(SLIDES.length - 1); }
+  else if (/^[fF]$/.test(k)) penuh(); else if (/^[mM]$/.test(k)) bukaMenu(); else if (/^[gG]$/.test(k)) bukaGuru(); else if (/^[tT]$/.test(k)) tema();
+  else if (/^[jJ]$/.test(k)) jamToggle();
+  else if (/^[rR]$/.test(k)) { bukaGuru('alat'); acakSiswa(); }
+});
+let tx = null;
+stage.addEventListener('touchstart', e => { tx = e.touches.length === 1 ? [e.touches[0].clientX, e.touches[0].clientY] : null; }, { passive: true });
+stage.addEventListener('touchend', e => { if (!tx) return; const dx = e.changedTouches[0].clientX - tx[0], dy = e.changedTouches[0].clientY - tx[1]; tx = null;
+  if (Math.abs(dx) > 90 && Math.abs(dx) > Math.abs(dy) * 2 && !e.target.closest('input, table')) go(S.aktif + (dx < 0 ? 1 : -1)); }, { passive: true });
+
+/* ---------- Mulai ---------- */
+document.documentElement.dataset.jenjang = CONFIG.jenjang; $('#o-jenjang').value = CONFIG.jenjang;
+document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+$('#brand').textContent = `${CONFIG.judul} · ${CONFIG.mapel} ${CONFIG.kelas}`; document.title = `${polos(CONFIG.judul)} — ${CONFIG.mapel}`;
+$('#pb').setAttribute('aria-valuemin', 1); $('#pb').setAttribute('aria-valuemax', SLIDES.length);
+renderSemua(); hud(); labelJam(); infoKet();
+const awal = parseInt(location.hash.slice(1), 10); go(Number.isNaN(awal) ? 0 : awal - 1);
+</script>
+</body>
+</html>
